@@ -1,49 +1,68 @@
 package main.PHCIndex;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NeighborsValue {
     private int core;
-    private int coreTime;
-    private int coreTimeNb;
+    private int CTN;
+    private final List<Integer> coreTimeNb;
 
-    public NeighborsValue(int core, int coreTime) {
+    public NeighborsValue(int core, int CTN) {
         this.core = core;
-        this.coreTime = coreTime;
-        coreTimeNb = 1;
+        this.CTN = CTN;
+        coreTimeNb = new ArrayList<>();
     }
 
-    public NeighborsValue(int core, int coreTime, int coreTimeNb) {
+    public NeighborsValue(int core, int CTN, List<Integer> timeStamps) {
         this.core = core;
-        this.coreTime = coreTime;
-        this.coreTimeNb = coreTimeNb;
+        this.CTN = CTN;
+        coreTimeNb = new ArrayList<>(timeStamps);
     }
 
-    public void addCoreTimeNb(){
-        coreTimeNb++;
-    }
-
-    public int getCore() {
-        return core;
+    public void setCTN(int CTN) {
+        this.CTN = CTN;
     }
 
     public void setCore(int core) {
         this.core = core;
     }
 
-    public int getCoreTime() {
-        return coreTime;
+    public int getCore() {
+        return core;
     }
 
-    public void setCoreTime(int coreTime) {
-        this.coreTime = coreTime;
+    public int getCTN() {
+        return CTN;
+    }
+
+    /**
+     * Decrease the CTN and return true if CTN > 0
+     * @return true if CTN > 0
+     */
+    public boolean decreaseCTN(){
+        CTN--;
+        return CTN > 0;
+    }
+
+    public void increaseCTN(){
+        CTN++;
+    }
+
+    public void setCTNtoZero(){
+        CTN = 0;
+    }
+
+    public List<Integer> getCoreTimeNb() {
+        return coreTimeNb;
     }
 
     @Override
     public String toString() {
-        return "{" +
+        return "NeighborsValue{" +
                 "core=" + core +
-                ", coreTime=" + coreTime +
+                ", CTN=" + CTN +
+                ", coreTimeNb=" + coreTimeNb +
                 '}';
     }
 }

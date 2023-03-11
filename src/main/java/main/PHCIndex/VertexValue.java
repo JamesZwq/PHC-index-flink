@@ -2,17 +2,51 @@ package main.PHCIndex;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class VertexValue<K> {
     private final HashMap<K,NeighborsValue> neighbors;
     private int core;
+    private int oldCore;
+    private final List<Tuple2<Integer,Integer>> coreTime;
+//    private final List<List<Tuple2<Integer,Integer>>> coreTime;
+
+    private boolean calculated;
 
     public VertexValue(int k, HashMap<K,NeighborsValue> neighbors) {
         this.core = k;
+        this.oldCore = k;
         this.neighbors = neighbors;
+        this.calculated = false;
+        this.coreTime = new ArrayList<>();
+        for (int i = 0; i <= k; i++) {
+            coreTime.add(new Tuple2<>(0,Integer.MAX_VALUE));
+//            coreTime.add(new ArrayList<>());
+        }
+    }
+
+    public VertexValue(VertexValue<K> v) {
+        this.core = v.core;
+        this.oldCore = v.oldCore;
+        this.neighbors = new HashMap<>(v.neighbors);
+        this.coreTime = new ArrayList<>(v.coreTime);
+        this.calculated = v.calculated;
+    }
+
+    public void setCalculatedCoreCN(){
+        calculated = true;
+    }
+
+    public void setCalculatedCoreCNFalse(){
+        calculated = false;
+    }
+
+    public boolean isCalculated() {
+        return calculated;
+    }
+
+    public HashMap<K, NeighborsValue> getNeighbors() {
+        return neighbors;
     }
 
     public int getCore() {
@@ -23,11 +57,63 @@ public class VertexValue<K> {
         this.core = core;
     }
 
+    public void decreaseNeighbors(K v){
+        if (!neighbors.get(v).decreaseCTN()){
+            neighbors.remove(v);
+        }
+    }
+
+    public void resetCoreTimeNeighbors(){
+        for (NeighborsValue n : neighbors.values()) {
+            n.setCTN(0);
+        }
+    }
+
+
+    public void addCoreTime(int k, int ts, int te){
+
+        coreTime.set(k,new Tuple2<>(ts,te));
+//        coreTime.get(k).add(new Tuple2<>(ts,te));
+    }
+
+    public int getOldCore() {
+        return oldCore;
+    }
+
+    public void setOldCore(int oldCore) {
+        this.oldCore = oldCore;
+    }
+
+    public void setCalculated(boolean calculated) {
+        this.calculated = calculated;
+    }
+
+    public int getCTNSize(){
+        int size = 0;
+        for (NeighborsValue n : neighbors.values()) {
+            if(n.getCTN() > 0)
+                size++;
+        }
+        return size;
+    }
+
     @Override
     public String toString() {
         return "VertexValue{" +
-                "neighbors=" + neighbors +
-                ", core=" + core +
+                "coreTime=" + coreTime +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VertexValue<?> that = (VertexValue<?>) o;
+        return core == that.core && calculated == that.calculated && Objects.equals(neighbors, that.neighbors) && Objects.equals(coreTime, that.coreTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(neighbors, core, coreTime, calculated);
     }
 }
