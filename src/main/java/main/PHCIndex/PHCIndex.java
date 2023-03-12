@@ -1,6 +1,9 @@
 package main.PHCIndex;
 
 import main.IOEfficientCore.I_O_efficient_Core;
+import main.PHCIndex.InitCT.InitCT;
+import main.PHCIndex.PHC.InitCT.PHCMessenger;
+import main.PHCIndex.PHC.InitCT.PHCUpdater;
 import org.apache.flink.api.common.aggregators.LongSumAggregator;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
@@ -9,9 +12,6 @@ import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
 import org.apache.flink.graph.Vertex;
-import org.apache.flink.graph.spargel.GatherFunction;
-import org.apache.flink.graph.spargel.MessageIterator;
-import org.apache.flink.graph.spargel.ScatterFunction;
 import org.apache.flink.graph.spargel.ScatterGatherConfiguration;
 import org.apache.flink.types.NullValue;
 
@@ -26,8 +26,6 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
     }
     @Override
     public DataSet<Vertex<K, VertexValue<K>>> run(Graph<K, NullValue, Integer> input) throws Exception {
-//        get core of each vertex for all graph
-//        cover to HashMap<K, Integer> core
         HashMap<K, Integer> core = new I_O_efficient_Core<K, Integer>(maxIterations).run(input).collect().stream().collect(HashMap::new, (m, v) -> m.put(v.getId(), v.getValue().getCore()), HashMap::putAll);
         List<Edge<K,Integer>> allEdge = input.getEdges().collect();
         List<Integer> timeStamps = input.getEdges().map(new MapFunction<Edge<K, Integer>, Integer>() {
@@ -40,21 +38,23 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
         Graph<K, VertexValue<K>, Integer> result = input.mapVertices(new InitVerticesMapper<>(core, allEdge));
         ScatterGatherConfiguration parameters = new ScatterGatherConfiguration();
         parameters.registerAggregator("maxIterations", new LongSumAggregator());
+        MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>> mapFunction = new MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>>() {
+            @Override
+            public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) throws Exception {
+                vertex.getValue().setCalculatedCoreCNFalse();
+                return vertex.getValue();
+            }
+        };
         for (int t : timeStamps) {
-//            if (t == timeStamps.get(timeStamps.size() - 1)) {
-//                break;
-//            }
             result = result
                     .runScatterGatherIteration(new InitCT.InitCTMessenger<>(t), new InitCT.InitCTUpdater<>(t), maxIterations, parameters)
-                    .mapVertices(new MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>>() {
-                        @Override
-                        public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) throws Exception {
-                            vertex.getValue().setCalculatedCoreCNFalse();
-                            return vertex.getValue();
-                        }
-                    });
-            result.getVertices().print();
+                    .mapVertices(mapFunction);
         }
+//        for (int t : timeStamps) {
+//            result = result
+//                    .runScatterGatherIteration(new PHCMessenger<>(t), new PHCUpdater<>(t), maxIterations, parameters)
+//                    .mapVertices(mapFunction);
+//        }
         return result.getVertices();
     }
 
@@ -100,165 +100,6 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
             }
 
             return new VertexValue<>(core.get(value.getId()), nei);
-        }
-    }
-
-    private static final class ComputeHelper<K> {
-        private int timeEnd;
-
-        public ComputeHelper(int timeEnd) {
-            this.timeEnd = timeEnd;
-        }
-
-        public HashMap<K,Integer> Compute_CN(K u, HashMap<K,Integer> neighbors, HashMap<K, Integer> core) {
-            HashMap<K,Integer> CN = new HashMap<>();
-            for (K edge : neighbors.keySet()) {
-                K v = edge;
-                if (core.get(v) < core.get(u)) continue;
-                if (!CN.containsKey(u)) {
-                    CN.put(u, 1);
-                } else {
-                    CN.put(u, CN.get(u) + 1);
-                }
-            }
-            return CN;
-        }
-    }
-
-    public static class InitCNMessage<K> {
-        int core;
-        K u;
-
-        public InitCNMessage(K u, int core) {
-            this.core = core;
-            this.u = u;
-        }
-
-        public int getCore() {
-            return core;
-        }
-
-        public K getSource() {
-            return u;
-        }
-    }
-
-
-    private static final class InitCT<K> {
-        public static final class InitCTMessenger<K>
-                extends ScatterFunction<K, VertexValue<K>, InitCNMessage<K>, Integer> {
-            private int timeEnd;
-
-            public InitCTMessenger(int timeStart) {
-                this.timeEnd = timeStart;
-            }
-
-            @Override
-            public void preSuperstep() throws Exception {
-                super.preSuperstep();
-            }
-
-            @Override
-            public void sendMessages(Vertex<K, VertexValue<K>> vertex) throws Exception {
-                HashSet<K> visited = new HashSet<>();
-                if(!vertex.getValue().isCalculated()) {
-                    for (Edge<K, Integer> e : getEdges()) {
-                        if (e.getValue() > timeEnd) continue;
-                        if (!vertex.getValue().getNeighbors().containsKey(e.getTarget())) continue;
-                        if (visited.contains(e.getTarget())) continue;
-                        NeighborsValue neighborsValue = vertex.getValue().getNeighbors().get(e.getTarget());
-                        if(!neighborsValue.decreaseCTN()){
-                            sendMessageTo(e.getTarget(), new InitCNMessage<>(vertex.getId(), vertex.getValue().getCore()));
-                            visited.add(e.getTarget());
-                        }
-                    }
-                } else {
-                    for (Edge<K, Integer> e : getEdges()) {
-                        if (e.getValue() > timeEnd) continue;
-                        if (!vertex.getValue().getNeighbors().containsKey(e.getTarget())) continue;
-                        if (visited.contains(e.getTarget())) continue;
-                        NeighborsValue neighborsValue = vertex.getValue().getNeighbors().get(e.getTarget());
-                        if (vertex.getValue().getCore() < neighborsValue.getCore() && neighborsValue.getCore() <= vertex.getValue().getOldCore()) {
-                            sendMessageTo(e.getTarget(), new InitCNMessage<>(vertex.getId(), vertex.getValue().getCore()));
-                            visited.add(e.getTarget());
-                        }
-                    }
-                }
-            }
-        }
-
-        public static final class InitCTUpdater<K> extends GatherFunction<K, VertexValue<K>, InitCNMessage<K>> {
-
-            private int timeEnd;
-
-            public InitCTUpdater(int timeEnd) {
-                this.timeEnd = timeEnd;
-            }
-
-            @Override
-            public void preSuperstep() throws Exception {
-                super.preSuperstep();
-            }
-
-            @Override
-            public void updateVertex(Vertex<K, VertexValue<K>> vertex, MessageIterator<InitCNMessage<K>> inMessages) throws Exception {
-                VertexValue<K> v = new VertexValue<>(vertex.getValue());
-
-                boolean noUpdate = true;
-                for (InitCNMessage<K> msg : inMessages) {
-                    v.getNeighbors().get(msg.getSource()).setCore(msg.getCore());
-                    if(v.isCalculated()){
-                        v.getNeighbors().get(msg.getSource()).setCTNtoZero();
-                        if(v.getCTNSize() < v.getCore()){
-                            noUpdate = false;
-                        }
-                    } else {
-                        noUpdate = false;
-                    }
-                }
-                if (noUpdate) {
-                    setNewVertexValue(v);
-                    return;
-                }
-                v.setCalculatedCoreCN();
-                int oldCore = v.getCore();
-                v.setOldCore(oldCore);
-
-                List<Integer> cnt = new ArrayList<>();
-                for (int i = 0; i <= oldCore; ++i) {
-                    cnt.add(0);
-                }
-
-                HashMap<K, NeighborsValue> neighbors = v.getNeighbors();
-                for (K nei : neighbors.keySet()) {
-                    if(neighbors.get(nei).getCoreTimeNb().stream().noneMatch(x -> x <= timeEnd)) continue;
-                    int coreNei = neighbors.get(nei).getCore();
-                    if (coreNei < oldCore) cnt.set(coreNei, cnt.get(coreNei) + 1);
-                    else cnt.set(oldCore, cnt.get(oldCore) + 1);
-                }
-                int cd = 0;
-                for (int k = oldCore; k >= 0 ; --k) {
-                    cd += cnt.get(k);
-                    if(cd >= k){
-                        v.setCore(k);
-                        break;
-                    }
-                }
-
-                v.resetCoreTimeNeighbors();
-                for (K nei : neighbors.keySet()) {
-                    if(neighbors.get(nei).getCoreTimeNb().stream().noneMatch(x -> x <= timeEnd)) continue;
-                    int coreNei = neighbors.get(nei).getCore();
-                    if (coreNei < v.getCore()) continue;
-                    v.getNeighbors().get(nei).increaseCTN();
-                }
-
-                for(int tmp_k = oldCore; tmp_k >= v.getCore(); --tmp_k){
-                    v.addCoreTime(tmp_k, 1, timeEnd);
-                }
-
-                if(!v.equals(vertex.getValue())) setNewVertexValue(v);
-            }
         }
     }
 

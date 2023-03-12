@@ -1,14 +1,12 @@
 package main.PHCIndex;
 
-import org.apache.flink.api.java.tuple.Tuple2;
-
 import java.util.*;
 
 public class VertexValue<K> {
     private final HashMap<K,NeighborsValue> neighbors;
     private int core;
     private int oldCore;
-    private final List<Tuple2<Integer,Integer>> coreTime;
+    private final List<Integer> coreTime;
 //    private final List<List<Tuple2<Integer,Integer>>> coreTime;
 
     private boolean calculated;
@@ -20,7 +18,7 @@ public class VertexValue<K> {
         this.calculated = false;
         this.coreTime = new ArrayList<>();
         for (int i = 0; i <= k; i++) {
-            coreTime.add(new Tuple2<>(0,Integer.MAX_VALUE));
+            coreTime.add(Integer.MAX_VALUE);
 //            coreTime.add(new ArrayList<>());
         }
     }
@@ -70,9 +68,9 @@ public class VertexValue<K> {
     }
 
 
-    public void addCoreTime(int k, int ts, int te){
+    public void addCoreTime(int k, int te){
 
-        coreTime.set(k,new Tuple2<>(ts,te));
+        coreTime.set(k,te);
 //        coreTime.get(k).add(new Tuple2<>(ts,te));
     }
 
@@ -102,6 +100,26 @@ public class VertexValue<K> {
         return "VertexValue{" +
                 "coreTime=" + coreTime +
                 '}';
+    }
+
+
+//    @Override
+//    public String toString() {
+//        return "VertexValue{\n" +
+//                "neighbors=" + neighborsToString() +
+//                ", core=" + core +
+//                "\n, oldCore=" + oldCore +
+//                "\n, coreTime=" + coreTime +
+//                "\n, calculated=" + calculated +
+//                "}\n";
+//    }
+
+    public String neighborsToString(){
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<K,NeighborsValue> n : neighbors.entrySet()) {
+            sb.append(n.getValue().toString()).append("\n");
+        }
+        return sb.toString();
     }
 
     @Override
