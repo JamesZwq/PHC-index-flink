@@ -1,9 +1,8 @@
 package main.PHCIndex;
 
 import main.IOEfficientCore.I_O_efficient_Core;
-import main.PHCIndex.InitCT.InitCT;
-import main.PHCIndex.PHC.InitCT.PHCMessenger;
-import main.PHCIndex.PHC.InitCT.PHCUpdater;
+import main.PHCIndex.InitCT.InitCTMessenger;
+import main.PHCIndex.InitCT.InitCTUpdater;
 import org.apache.flink.api.common.aggregators.LongSumAggregator;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
@@ -47,7 +46,7 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
         };
         for (int t : timeStamps) {
             result = result
-                    .runScatterGatherIteration(new InitCT.InitCTMessenger<>(t), new InitCT.InitCTUpdater<>(t), maxIterations, parameters)
+                    .runScatterGatherIteration(new InitCTMessenger<>(t), new InitCTUpdater<>(t), maxIterations, parameters)
                     .mapVertices(mapFunction);
         }
 //        for (int t : timeStamps) {
