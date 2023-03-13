@@ -1,18 +1,21 @@
-package main.PHCIndex.InitCT;
+package main.PHCIndex.PHC;
 
 
+import java.util.List;
 /**
  * @param <K> The type of the vertex key.
  */
-public class InitCTMessage<K> {
+public class PHCMessage<K> {
     private final int core;
     private final K u;
     private final boolean shouldUpdate;
+    private final List<Integer> CoreTimes;
 
-    public InitCTMessage(K u, int core, boolean shouldUpdate) {
+    public PHCMessage(K u, int core, boolean shouldUpdate, List<Integer> CoreTimes) {
         this.core = core;
         this.u = u;
         this.shouldUpdate = shouldUpdate;
+        this.CoreTimes = CoreTimes;
     }
     public boolean isShouldUpdate() {
         return shouldUpdate;
@@ -24,5 +27,9 @@ public class InitCTMessage<K> {
 
     public K getSource() {
         return u;
+    }
+
+    public List<Integer> getCoreTimes() {
+        return CoreTimes;
     }
 }

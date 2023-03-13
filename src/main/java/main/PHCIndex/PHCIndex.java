@@ -3,6 +3,10 @@ package main.PHCIndex;
 import main.IOEfficientCore.I_O_efficient_Core;
 import main.PHCIndex.InitCT.InitCTMessenger;
 import main.PHCIndex.InitCT.InitCTUpdater;
+import main.PHCIndex.PHC.PHCMessenger;
+import main.PHCIndex.PHC.PHCUpdater;
+import main.PHCIndex.PHCVertex.NeighborsValue;
+import main.PHCIndex.PHCVertex.VertexValue;
 import org.apache.flink.api.common.aggregators.LongSumAggregator;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
@@ -12,6 +16,7 @@ import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.ScatterGatherConfiguration;
+import org.apache.flink.graph.validation.GraphValidator;
 import org.apache.flink.types.NullValue;
 
 import java.util.*;
@@ -26,6 +31,7 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
     @Override
     public DataSet<Vertex<K, VertexValue<K>>> run(Graph<K, NullValue, Integer> input) throws Exception {
         HashMap<K, Integer> core = new I_O_efficient_Core<K, Integer>(maxIterations).run(input).collect().stream().collect(HashMap::new, (m, v) -> m.put(v.getId(), v.getValue().getCore()), HashMap::putAll);
+
         List<Edge<K,Integer>> allEdge = input.getEdges().collect();
         List<Integer> timeStamps = input.getEdges().map(new MapFunction<Edge<K, Integer>, Integer>() {
             @Override
@@ -33,27 +39,36 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
                 return edge.getValue();
             }
         }).distinct().collect();
-        timeStamps.sort(Comparator.reverseOrder());
+
+        timeStamps.sort(Comparator.naturalOrder());
+
         Graph<K, VertexValue<K>, Integer> result = input.mapVertices(new InitVerticesMapper<>(core, allEdge));
+
         ScatterGatherConfiguration parameters = new ScatterGatherConfiguration();
         parameters.registerAggregator("maxIterations", new LongSumAggregator());
         MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>> mapFunction = new MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>>() {
             @Override
-            public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) throws Exception {
+            public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) {
                 vertex.getValue().setCalculatedCoreCNFalse();
                 return vertex.getValue();
             }
         };
-        for (int t : timeStamps) {
-            result = result
-                    .runScatterGatherIteration(new InitCTMessenger<>(t), new InitCTUpdater<>(t), maxIterations, parameters)
-                    .mapVertices(mapFunction);
-        }
-//        for (int t : timeStamps) {
+
+
+//        for(int i = timeStamps.size(); i > 0; i--) {
+//            int i = 5;
+//            int t = timeStamps.get(i-1);
+//            result = result
+//                    .runScatterGatherIteration(new InitCTMessenger<>(t), new InitCTUpdater<>(t), maxIterations, parameters)
+//                    .mapVertices(mapFunction);
+////        }
+//        loop
+//        for(int t: timeStamps) {
 //            result = result
 //                    .runScatterGatherIteration(new PHCMessenger<>(t), new PHCUpdater<>(t), maxIterations, parameters)
 //                    .mapVertices(mapFunction);
 //        }
+//        new GraphValidator<>(result).validate();
         return result.getVertices();
     }
 
@@ -73,7 +88,7 @@ public class PHCIndex<K> implements GraphAlgorithm<K, NullValue, Integer, DataSe
         }
 
         public VertexValue<K> map(Vertex<K, VV> value) {
-            HashMap<K,NeighborsValue> nei = new HashMap<>();
+            HashMap<K, NeighborsValue> nei = new HashMap<>();
             HashMap<K, Tuple2<Integer,List<Integer>>> CN = new HashMap<>();
             for (Edge<K,Integer> e : edgeAtS) {
                 if (e.getSource().equals(value.getId())) {

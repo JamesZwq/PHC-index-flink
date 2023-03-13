@@ -173,7 +173,6 @@ public class I_O_efficient_Core<K, EV>
 			for (MyMessage<K> msg : inMessages) {
 				if (msg != null) {
 					newVertexValue.getNeighbors().put(msg.getVertex(), new Tuple2<>(msg.getCore(), msg.getCnt()));
-
 				}
 			}
 			if (vertex.getValue().getCut() >= vertex.getValue().getCore()) {

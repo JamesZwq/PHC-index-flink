@@ -1,8 +1,8 @@
-package main.PHCIndex.PHC.InitCT;
+package main.PHCIndex.PHC;
 
 
-import main.PHCIndex.NeighborsValue;
-import main.PHCIndex.VertexValue;
+import main.PHCIndex.PHCVertex.NeighborsValue;
+import main.PHCIndex.PHCVertex.VertexValue;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.GatherFunction;
 import org.apache.flink.graph.spargel.MessageIterator;
@@ -10,7 +10,9 @@ import org.apache.flink.graph.spargel.MessageIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+/**
+ * @param <K> The type of the vertex key.
+ */
 public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMessage<K>> {
 
     private final int timeEnd;
@@ -32,7 +34,7 @@ public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMe
             v.getNeighbors().get(msg.getSource()).setCore(msg.getCore());
             if(v.isCalculated()){
                 v.getNeighbors().get(msg.getSource()).setCTNtoZero();
-                if(msg.shouldUpdate && v.getCTNSize() < v.getCore()){
+                if(msg.isShouldUpdate() && v.getCTNSize() < v.getCore()){
                     noUpdate = false;
                 }
             } else {
@@ -55,7 +57,7 @@ public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMe
 
         HashMap<K, NeighborsValue> neighbors = v.getNeighbors();
         for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getCoreTimeNb().stream().noneMatch(x -> x < timeEnd)) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x < timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < oldCore) cnt.set(coreNei, cnt.get(coreNei) + 1);
             else cnt.set(oldCore, cnt.get(oldCore) + 1);
@@ -71,7 +73,7 @@ public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMe
 
         v.resetCoreTimeNeighbors();
         for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getCoreTimeNb().stream().noneMatch(x -> x <= timeEnd)) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x <= timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < v.getCore()) continue;
             v.getNeighbors().get(nei).increaseCTN();

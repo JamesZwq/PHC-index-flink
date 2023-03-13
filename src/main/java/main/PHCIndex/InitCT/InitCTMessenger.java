@@ -1,14 +1,16 @@
 package main.PHCIndex.InitCT;
 
 
-import main.PHCIndex.NeighborsValue;
-import main.PHCIndex.VertexValue;
+import main.PHCIndex.PHCVertex.NeighborsValue;
+import main.PHCIndex.PHCVertex.VertexValue;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.ScatterFunction;
 
 import java.util.HashSet;
-
+/**
+ * @param <K> The type of the vertex key.
+ */
 public final class InitCTMessenger<K>
         extends ScatterFunction<K, VertexValue<K>, InitCTMessage<K>, Integer> {
     private final int timeEnd;

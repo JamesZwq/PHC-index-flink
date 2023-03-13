@@ -1,4 +1,4 @@
-package main.PHCIndex;
+package main.PHCIndex.PHCVertex;
 
 import java.util.*;
 
@@ -29,6 +29,10 @@ public class VertexValue<K> {
         this.neighbors = new HashMap<>(v.neighbors);
         this.coreTime = new ArrayList<>(v.coreTime);
         this.calculated = v.calculated;
+    }
+
+    public List<Integer> getCoreTimes() {
+        return coreTime;
     }
 
     public void setCalculatedCoreCN(){
@@ -99,6 +103,7 @@ public class VertexValue<K> {
     public String toString() {
         return "VertexValue{" +
                 "coreTime=" + coreTime +
+                ", core=" + core +
                 '}';
     }
 

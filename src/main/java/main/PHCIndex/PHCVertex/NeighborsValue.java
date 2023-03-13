@@ -1,4 +1,4 @@
-package main.PHCIndex;
+package main.PHCIndex.PHCVertex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,18 +6,36 @@ import java.util.List;
 public class NeighborsValue {
     private int core;
     private int CTN;
-    private final List<Integer> coreTimeNb;
+    private final List<Integer> EdgeTimes;
+
+    private List<Integer> coreTimes;
 
     public NeighborsValue(int core, int CTN) {
         this.core = core;
         this.CTN = CTN;
-        coreTimeNb = new ArrayList<>();
+        EdgeTimes = new ArrayList<>();
+        coreTimes = new ArrayList<>();
+        for (int i = 0; i <= core; i++) {
+            coreTimes.add(Integer.MAX_VALUE);
+        }
     }
 
     public NeighborsValue(int core, int CTN, List<Integer> timeStamps) {
         this.core = core;
         this.CTN = CTN;
-        coreTimeNb = new ArrayList<>(timeStamps);
+        EdgeTimes = new ArrayList<>(timeStamps);
+        coreTimes = new ArrayList<>();
+        for (int i = 0; i <= core; i++) {
+            coreTimes.add(Integer.MAX_VALUE);
+        }
+    }
+
+    public void setCoreTimes(List<Integer> coreTimes) {
+        this.coreTimes = coreTimes;
+    }
+
+    public void setCoreTimes(int core, int time) {
+        this.coreTimes.set(core, time);
     }
 
     public void setCTN(int CTN) {
@@ -53,8 +71,8 @@ public class NeighborsValue {
         CTN = 0;
     }
 
-    public List<Integer> getCoreTimeNb() {
-        return coreTimeNb;
+    public List<Integer> getEdgeTimes() {
+        return EdgeTimes;
     }
 
     @Override
@@ -62,7 +80,7 @@ public class NeighborsValue {
         return "NeighborsValue{" +
                 "core=" + core +
                 ", CTN=" + CTN +
-                ", coreTimeNb=" + coreTimeNb +
+                ", coreTimeNb=" + EdgeTimes +
                 '}';
     }
 }
