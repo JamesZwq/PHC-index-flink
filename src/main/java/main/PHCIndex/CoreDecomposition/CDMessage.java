@@ -18,20 +18,20 @@ public class CDMessage<K> {
         return source;
     }
 
-    public int getCore() {
-        return core;
-    }
-
-    public int getCnt() {
-        return cnt;
-    }
-
     public void setSource(K source) {
         this.source = source;
     }
 
+    public int getCore() {
+        return core;
+    }
+
     public void setCore(int core) {
         this.core = core;
+    }
+
+    public int getCnt() {
+        return cnt;
     }
 
     public void setCnt(int cnt) {

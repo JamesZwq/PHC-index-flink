@@ -11,7 +11,7 @@ public class CDVertexValue<K> {
 
     private int oldCore;
     // <neighbor, <core, cnt>>
-    private HashMap<K, Tuple2<Integer,Integer>> neighbors;
+    private HashMap<K, Tuple2<Integer, Integer>> neighbors;
 
     public CDVertexValue(int core) {
         this.core = core;
@@ -20,7 +20,7 @@ public class CDVertexValue<K> {
         this.neighbors = new HashMap<>();
     }
 
-    public CDVertexValue(CDVertexValue<K> c){
+    public CDVertexValue(CDVertexValue<K> c) {
         this.core = c.getCore();
         this.oldCore = c.getOldCore();
         this.cnt = c.getCnt();
@@ -31,27 +31,27 @@ public class CDVertexValue<K> {
         return core;
     }
 
-    public int getCnt() {
-        return cnt;
-    }
-
-    public HashMap<K, Tuple2<Integer, Integer>> getNeighbors() {
-        return neighbors;
-    }
-
     public void setCore(int core) {
         this.core = core;
+    }
+
+    public int getCnt() {
+        return cnt;
     }
 
     public void setCnt(int cnt) {
         this.cnt = cnt;
     }
 
+    public HashMap<K, Tuple2<Integer, Integer>> getNeighbors() {
+        return neighbors;
+    }
+
     public void setNeighbors(HashMap<K, Tuple2<Integer, Integer>> neighbors) {
         this.neighbors = neighbors;
     }
 
-    public void setNeighbor(K neighbor, int core, int cnt){
+    public void setNeighbor(K neighbor, int core, int cnt) {
         this.neighbors.put(neighbor, new Tuple2<>(core, cnt));
     }
 
