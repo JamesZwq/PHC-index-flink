@@ -18,8 +18,8 @@ public class CDMessage<K> {
         return source;
     }
 
-    public void setSource(K source) {
-        this.source = source;
+    public boolean isDecreaseCnt() {
+        return decreaseCnt;
     }
 
     public int getCore() {

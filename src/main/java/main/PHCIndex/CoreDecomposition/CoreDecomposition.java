@@ -1,3 +1,5 @@
+// I/O Efficient Core Graph Decomposition at Web Scale
+
 package main.PHCIndex.CoreDecomposition;
 
 import org.apache.flink.api.common.functions.MapFunction;
@@ -21,7 +23,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
 
     @Override
     public DataSet<Vertex<K, Integer>> run(Graph<K, NullValue, EV> input) throws Exception {
-        DataSet<Vertex<K, LongValue>> degree = input.run(new Simplify<K, NullValue, EV>(false)).run(new VertexInDegree<K, NullValue, EV>());
+        DataSet<Vertex<K, LongValue>> degree = input.getUndirected().run(new Simplify<K, NullValue, EV>(false)).run(new VertexInDegree<K, NullValue, EV>());
         MapOperator<Vertex<K, LongValue>, Vertex<K, CDVertexValue<K>>> map = degree.map(new MapFunction<Vertex<K, LongValue>, Vertex<K, CDVertexValue<K>>>() {
             @Override
             public Vertex<K, CDVertexValue<K>> map(Vertex<K, LongValue> vertex) throws Exception {

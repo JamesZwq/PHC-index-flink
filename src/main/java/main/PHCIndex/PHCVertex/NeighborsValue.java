@@ -6,24 +6,23 @@ import java.util.List;
 public class NeighborsValue {
     private int core;
     private int CTN;
-    private final List<Integer> EdgeTimes;
+    private int minTime;
 
     private List<Integer> coreTimes;
 
     public NeighborsValue(int core, int CTN) {
         this.core = core;
         this.CTN = CTN;
-        EdgeTimes = new ArrayList<>();
         coreTimes = new ArrayList<>();
         for (int i = 0; i <= core; i++) {
             coreTimes.add(Integer.MAX_VALUE);
         }
     }
 
-    public NeighborsValue(int core, int CTN, List<Integer> timeStamps) {
+    public NeighborsValue(int core, int CTN, int minTime) {
         this.core = core;
         this.CTN = CTN;
-        EdgeTimes = new ArrayList<>(timeStamps);
+        this.minTime = minTime;
         coreTimes = new ArrayList<>();
         for (int i = 0; i <= core; i++) {
             coreTimes.add(Integer.MAX_VALUE);
@@ -71,8 +70,8 @@ public class NeighborsValue {
         CTN = 0;
     }
 
-    public List<Integer> getEdgeTimes() {
-        return EdgeTimes;
+    public int getMinTime() {
+        return minTime;
     }
 
     @Override
@@ -80,7 +79,6 @@ public class NeighborsValue {
         return "NeighborsValue{" +
                 "core=" + core +
                 ", CTN=" + CTN +
-                ", coreTimeNb=" + EdgeTimes +
                 '}';
     }
 }
