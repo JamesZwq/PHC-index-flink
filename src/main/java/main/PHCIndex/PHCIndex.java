@@ -2,12 +2,16 @@ package main.PHCIndex;
 
 import main.PHCIndex.CoreDecomposition.CoreDecomposition;
 import main.PHCIndex.CoreTime.CoreTime;
+import main.PHCIndex.InitCT.InitCTMessenger;
+import main.PHCIndex.InitCT.InitCTUpdater;
 import main.PHCIndex.PHCVertex.NeighborsValue;
 import main.PHCIndex.PHCVertex.VertexValue;
 import org.apache.flink.api.common.aggregators.LongSumAggregator;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
@@ -15,6 +19,7 @@ import org.apache.flink.graph.GraphAlgorithm;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.ScatterGatherConfiguration;
 import org.apache.flink.types.NullValue;
+import org.apache.flink.util.Collector;
 
 import java.util.*;
 
@@ -28,30 +33,46 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
     @Override
     public DataSet<Vertex<K, VertexValue<K>>> run(Graph<K, NullValue, Integer> input) throws Exception {
         DataSet<Vertex<K, Integer>> Cores = new CoreDecomposition<K, Integer>(maxIterations).run(input);
-        Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
+//        Cores.mapPartition(new MapPartitionFunction<Vertex<K, Integer>, Vertex<K, VertexValue<K>>>() {
+//                               @Override
+//                               public void mapPartition(Iterable<Vertex<K, Integer>> iterable, Collector<Vertex<K, VertexValue<K>>> collector) throws Exception {
+//                                   for (Vertex<K, Integer> vertex : iterable) {
+//                                       System.out.println(vertex.getId() + " " + vertex.getValue());
+//                                   }
+//                                   System.out.println("===================================");
+//                               }
+//                           }).setParallelism(10).collect();
+
         ScatterGatherConfiguration parameters = new ScatterGatherConfiguration();
         parameters.registerAggregator("maxIterations", new LongSumAggregator());
+        Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
         new CoreTime<K>(maxIterations).run(result).sortPartition(0, Order.ASCENDING).print();
 
+        return null;
 //        get time stamps
-        List<Integer> timeStamps = input.getEdges().map(new MapFunction<Edge<K, Integer>, Integer>() {
-            @Override
-            public Integer map(Edge<K, Integer> edge) throws Exception {
-                return edge.getValue();
-            }
-        }).distinct().collect();
-        timeStamps.sort(Comparator.naturalOrder());
-
-
-
-        MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>> mapFunction = new MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>>() {
-            @Override
-            public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) {
-                vertex.getValue().setCalculatedCoreCNFalse();
-                return vertex.getValue();
-            }
-        };
-
+//        HashMap<K, Integer> core = new CoreDecomposition<K, Integer>(maxIterations).run(input).collect().stream().collect(HashMap::new, (m, v) -> m.put(v.getId(), v.getValue()), HashMap::putAll);
+//        List<Edge<K,Integer>> allEdge = input.getEdges().collect();
+//        List<Integer> timeStamps = input.getEdges().map(new MapFunction<Edge<K, Integer>, Integer>() {
+//            @Override
+//            public Integer map(Edge<K, Integer> edge) throws Exception {
+//                return edge.getValue();
+//            }
+//        }).distinct().collect();
+//
+//        timeStamps.sort(Comparator.naturalOrder());
+//
+//        Graph<K, VertexValue<K>, Integer> result = input.mapVertices(new InitVerticesMapper<>(core, allEdge));
+//
+//        ScatterGatherConfiguration parameters = new ScatterGatherConfiguration();
+//        parameters.registerAggregator("maxIterations", new LongSumAggregator());
+//        MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>> mapFunction = new MapFunction<Vertex<K, VertexValue<K>>, VertexValue<K>>() {
+//            @Override
+//            public VertexValue<K> map(Vertex<K, VertexValue<K>> vertex) {
+//                vertex.getValue().setCalculatedCoreCNFalse();
+//                return vertex.getValue();
+//            }
+//        };
+//
 //
 //        for(int i = timeStamps.size(); i > 0; i--) {
 //            int t = timeStamps.get(i-1);
@@ -59,6 +80,8 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
 //                    .runScatterGatherIteration(new InitCTMessenger<>(t), new InitCTUpdater<>(t), maxIterations, parameters)
 //                    .mapVertices(mapFunction);
 //        }
+//        return result.getVertices();
+
 //        loop
 //        for(int t: timeStamps) {
 //            result = result
@@ -67,7 +90,6 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
 //        }
 //        new GraphValidator<>(result).validate();
 //        return new CoreTime<K>(maxIterations).run(result);
-        return null;
     }
 
     /**

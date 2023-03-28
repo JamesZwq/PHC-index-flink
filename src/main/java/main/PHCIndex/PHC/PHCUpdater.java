@@ -57,8 +57,7 @@ public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMe
 
         HashMap<K, NeighborsValue> neighbors = v.getNeighbors();
         for (K nei : neighbors.keySet()) {
-//            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x < timeEnd)) continue;
-            if(neighbors.get(nei).getMinTime() > timeEnd) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x < timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < oldCore) cnt.set(coreNei, cnt.get(coreNei) + 1);
             else cnt.set(oldCore, cnt.get(oldCore) + 1);
@@ -74,8 +73,7 @@ public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMe
 
         v.resetCoreTimeNeighbors();
         for (K nei : neighbors.keySet()) {
-//            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x <= timeEnd)) continue;
-            if(neighbors.get(nei).getMinTime() >= timeEnd) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x <= timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < v.getCore()) continue;
             v.getNeighbors().get(nei).increaseCTN();

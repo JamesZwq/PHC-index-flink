@@ -27,17 +27,13 @@ public final class InitCTUpdater<K> extends GatherFunction<K, VertexValue<K>, In
     }
 
     @Override
-    public void postSuperstep() throws Exception {
-        super.postSuperstep();
-    }
-
-    @Override
     public void updateVertex(Vertex<K, VertexValue<K>> vertex, MessageIterator<InitCTMessage<K>> inMessages) throws Exception {
         VertexValue<K> v = new VertexValue<>(vertex.getValue());
         boolean noUpdate = true;
         for (InitCTMessage<K> msg : inMessages) {
-            v.insertNeighbors(msg.getSource(), msg.getCore(), msg.getMinTime());
+            v.getNeighbors().get(msg.getSource()).setCore(msg.getCore());
             if(v.isCalculated()){
+                v.getNeighbors().get(msg.getSource()).setCTNtoZero();
                 if(msg.isShouldUpdate() && v.getCTNSize() < v.getCore()){
                     noUpdate = false;
                 }
@@ -45,14 +41,12 @@ public final class InitCTUpdater<K> extends GatherFunction<K, VertexValue<K>, In
                 noUpdate = false;
             }
         }
-
-        if (noUpdate || getSuperstepNumber() == 1) {
+        if (noUpdate) {
             setNewVertexValue(v);
             return;
         }
-        v.setCalculatedCoreCN();
 
-//        对比core
+        v.setCalculatedCoreCN();
         int oldCore = v.getCore();
         v.setOldCore(oldCore);
 
@@ -63,7 +57,7 @@ public final class InitCTUpdater<K> extends GatherFunction<K, VertexValue<K>, In
 
         HashMap<K, NeighborsValue> neighbors = v.getNeighbors();
         for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getMinTime() > timeEnd) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x < timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < oldCore) cnt.set(coreNei, cnt.get(coreNei) + 1);
             else cnt.set(oldCore, cnt.get(oldCore) + 1);
@@ -77,10 +71,9 @@ public final class InitCTUpdater<K> extends GatherFunction<K, VertexValue<K>, In
             }
         }
 
-//        计算CTN
         v.resetCoreTimeNeighbors();
         for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getMinTime() > timeEnd) continue;
+            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x <= timeEnd)) continue;
             int coreNei = neighbors.get(nei).getCore();
             if (coreNei < v.getCore()) continue;
             v.getNeighbors().get(nei).increaseCTN();

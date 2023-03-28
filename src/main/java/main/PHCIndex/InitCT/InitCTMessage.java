@@ -9,20 +9,13 @@ public class InitCTMessage<K> {
     private final K u;
     private final boolean shouldUpdate;
 
-    private final int MinTime;
-
-    public InitCTMessage(K u, int core, int minTime,boolean shouldUpdate) {
+    public InitCTMessage(K u, int core, boolean shouldUpdate) {
         this.core = core;
         this.u = u;
         this.shouldUpdate = shouldUpdate;
-        this.MinTime = minTime;
     }
     public boolean isShouldUpdate() {
         return shouldUpdate;
-    }
-
-    public int getMinTime() {
-        return MinTime;
     }
 
     public int getCore() {

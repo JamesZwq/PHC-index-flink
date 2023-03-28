@@ -1,48 +1,62 @@
 package main.PHCIndex.CoreTime;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CTvalue<K> {
     private int core;
-    /**
-     * coreTime:
-     * Tuple2<K,Integer>
-     * K. the first element is the neighbor
-     * Integer. the second element is the time
-     */
-    private ArrayList<Tuple2<K,Integer>> nebrTimeMap;
+    private final ArrayList<NeighborValue<K>> nebrTimeMap;
     private final ArrayList<Integer> coreTime;
-    private final HashMap<K, Tuple2<Integer, ArrayList<Integer>>> neighbors;
 
-    public CTvalue(int core, ArrayList<Tuple2<K,Integer>> nebrTimeMap) {
+    public CTvalue(int core,ArrayList<NeighborValue<K>> nebrTimeMap) {
         this.core = core;
-        this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(o -> o.f1)).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        this.neighbors = new HashMap<>();
+        this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(o -> o.getTime())).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.coreTime = new ArrayList<>();
-        int maxTime = this.nebrTimeMap.get(this.nebrTimeMap.size() - 1).f1;
         for(int i = 0; i < this.core; i++){
-            this.coreTime.add(maxTime);
+            this.coreTime.add(CoreTime.maxTime);
         }
+    }
+
+    public CTvalue(CTvalue<K> c) {
+        this.core = c.getCore();
+        this.nebrTimeMap = new ArrayList<>();
+        for (NeighborValue<K> n : c.getNebrTimeMap()) {
+            this.nebrTimeMap.add(new NeighborValue<>(n));
+        }
+        this.coreTime = new ArrayList<>(c.getCoreTime());
     }
 
     public ArrayList<Integer> getCoreTime() {
         return coreTime;
     }
 
-
-    public void setCoreTime(int k, int time) {
-        this.coreTime.set(k, time);
+    public int getCoreTime(int k) {
+        if(k < coreTime.size())
+            return coreTime.get(k);
+        else
+            return Integer.MAX_VALUE;
     }
 
-    public CTvalue(CTvalue<K> c) {
-        this.core = c.getCore();
-        this.nebrTimeMap = c.getNebrTimeMap();
-        this.neighbors = new HashMap<>(c.getNeighbors());
-        this.coreTime = c.getCoreTimeList();
+    public int getCoreInTime(int time) {
+        for(int i = core-1; i >= 0; i--){
+            if(coreTime.get(i) <= time){
+                return i+1;
+            }
+        }
+        return core;
+    }
+
+    public void setCoreTime(int k, int time) {
+        for(int i = 0; i < k; i++){
+            if(coreTime.get(i) > time){
+                coreTime.set(i, time);
+            }
+        }
     }
 
     public int getCore() {
@@ -53,40 +67,40 @@ public class CTvalue<K> {
         this.core = core;
     }
 
-    public HashMap<K, Tuple2<Integer, ArrayList<Integer>>> getNeighbors() {
-        return neighbors;
-    }
-
-    public void setNeighbor(K neighbor, int core, ArrayList<Integer> coreTime) {
-        this.neighbors.put(neighbor, new Tuple2<>(core, coreTime));
-    }
-
-    public ArrayList<Tuple2<K,Integer>> getNebrTimeMap() {
+    public ArrayList<NeighborValue<K>> getNebrTimeMap() {
         return nebrTimeMap;
     }
 
-    public ArrayList<Integer> getCoreTimeList() {
-        ArrayList<Integer> coreTimeList = new ArrayList<>();
-        for(Tuple2<K,Integer> t : nebrTimeMap){
-            coreTimeList.add(t.f1);
-        }
-        return coreTimeList;
+    public void addNebrTimeMap(K key, Integer core, ArrayList<Integer> coreTime) {
+        NeighborValue<K> curr = nebrTimeMap.stream().filter(t -> t.getKey().equals(key)).findFirst().get();
+        int time = curr.getTime();
+        nebrTimeMap.removeIf(t -> t.getKey().equals(key));
+        nebrTimeMap.add(new NeighborValue<>(key, time, core, new ArrayList<>(coreTime)));
+        nebrTimeMap.sort(Comparator.comparing(o -> o.getTime()*-1));
     }
 
-    public void setNebrTimeMap(ArrayList<Tuple2<K,Integer>> nebrTimeMap) {
-        this.nebrTimeMap = nebrTimeMap;
-    }
-
-//    public void setCoreTime(int k, int time, K neighbor
-//        this.coreTime.add(new Tuple2<>(neighbor, time));
-//    }
 
     @Override
     public String toString() {
         return "CTvalue{" +
                 "core=" + core +
-                ", coreTime=" + nebrTimeMap +
-                ", neighbors=" + neighbors +
+                " nebrSize=" + nebrTimeMap.stream().filter(t -> t.getCore() >= core).count() +
+                ", nebrTimeMap=" + nebrTimeMap +
+                ", coreTime=" + coreTime +
                 '}';
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CTvalue<?> cTvalue = (CTvalue<?>) o;
+        return core == cTvalue.core && Objects.equals(coreTime, cTvalue.coreTime) && Objects.equals(nebrTimeMap, cTvalue.nebrTimeMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(core, nebrTimeMap, coreTime);
     }
 }

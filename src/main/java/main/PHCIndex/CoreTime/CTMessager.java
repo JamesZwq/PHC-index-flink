@@ -12,23 +12,15 @@ import java.util.HashSet;
 public class CTMessager<K> extends ScatterFunction<K, CTvalue<K>, CTMessage<K>, Integer> {
     @Override
     public void sendMessages(Vertex<K, CTvalue<K>> vertex) throws Exception {
-//        if(getSuperstepNumber() == 1){
-//            HashSet<K> set = new HashSet<>();
-//            for(Edge<K, Integer> e : getEdges()){
-//                if(set.contains(e.getTarget())) continue;
-//                set.add(e.getTarget());
-//                sendMessageTo(e.getTarget(), new CTMessage<>(vertex.getId(), vertex.getValue().getCore(), vertex.getValue().getCoreTime()));
-//            }
-//        } else {
-//            if(!ListCompare(vertex.getValue().getCoreTime(), vertex.getValue().getOldCoreTime())){
-//                HashSet<K> set = new HashSet<>();
-//                for(K u : vertex.getValue().getNeighbors().keySet()){
-//                    if(set.contains(u)) continue;
-//                    set.add(u);
-//                    sendMessageTo(u, new CTMessage<>(vertex.getId(), vertex.getValue().getCore(), vertex.getValue().getCoreTime()));
-//                }
-//            };
-//        }
+        System.out.println("curr step: " + getSuperstepNumber());
+        HashSet<K> visited = new HashSet<>();
+        for(Edge<K, Integer> edge : getEdges()){
+            if(!visited.contains(edge.getTarget())){
+                System.out.println("send message to " + edge.getTarget() + " from " + vertex.getId());
+                visited.add(edge.getTarget());
+                sendMessageTo(edge.getTarget(), new CTMessage<>(vertex.getId(), vertex.getValue().getCore(), vertex.getValue().getCoreTime()));
+            }
+        }
     }
 
     static boolean ListCompare(ArrayList<? extends Comparable> a, ArrayList<? extends Comparable> b){

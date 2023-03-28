@@ -99,13 +99,10 @@ public class VertexValue<K> {
         return size;
     }
 
-    public void insertNeighbors(K v, int core, int minTime){
-        neighbors.put(v,new NeighborsValue(core,0,minTime));
-    }
-
     @Override
     public String toString() {
         return "VertexValue{" +
+                "coreTime=" + coreTime +
                 ", core=" + core +
                 '}';
     }
@@ -113,8 +110,12 @@ public class VertexValue<K> {
 
 //    @Override
 //    public String toString() {
-//        return "VertexValue{" +
-//                "coreTime=" + coreTime +
+//        return "VertexValue{\n" +
+//                "neighbors=" + neighborsToString() +
+//                ", core=" + core +
+//                "\n, oldCore=" + oldCore +
+//                "\n, coreTime=" + coreTime +
+//                "\n, calculated=" + calculated +
 //                "}\n";
 //    }
 

@@ -26,13 +26,6 @@ public final class InitCTMessenger<K>
 
     @Override
     public void sendMessages(Vertex<K, VertexValue<K>> vertex) throws Exception {
-        if (getSuperstepNumber() == 1){
-            for (Edge<K, Integer> e : getEdges()) {
-                if (e.getValue() > timeEnd) continue;
-                sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), e.getValue(),false));
-            }
-            return;
-        }
         HashSet<K> visited = new HashSet<>();
         if(!vertex.getValue().isCalculated()) {
             for (Edge<K, Integer> e : getEdges()) {
@@ -41,7 +34,7 @@ public final class InitCTMessenger<K>
                 if (visited.contains(e.getTarget())) continue;
                 NeighborsValue neighborsValue = vertex.getValue().getNeighbors().get(e.getTarget());
                 if(!neighborsValue.decreaseCTN()){
-                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), e.getValue(), false));
+                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), false));
                     visited.add(e.getTarget());
                 }
             }
@@ -52,10 +45,10 @@ public final class InitCTMessenger<K>
                 if (visited.contains(e.getTarget())) continue;
                 NeighborsValue neighborsValue = vertex.getValue().getNeighbors().get(e.getTarget());
                 if (vertex.getValue().getCore() < neighborsValue.getCore() && neighborsValue.getCore() <= vertex.getValue().getOldCore()) {
-                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), e.getValue(), true));
+                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), true));
                     visited.add(e.getTarget());
                 } else if (vertex.getValue().getCore() != vertex.getValue().getOldCore()) {
-                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), e.getValue(), false));
+                    sendMessageTo(e.getTarget(), new InitCTMessage<>(vertex.getId(), vertex.getValue().getCore(), false));
                     visited.add(e.getTarget());
                 }
             }

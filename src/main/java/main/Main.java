@@ -32,8 +32,8 @@ public class Main {
 //        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
 		DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
 		Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
-
-        new PHCIndex<Integer>(100).run(graph).sortPartition(0, Order.ASCENDING).setParallelism(1).print();
+//        new PHCIndex<Integer>(10).run(graph).sortPartition(0, Order.ASCENDING).print();
+        new PHCIndex<Integer>(10).run(graph);
 
 //        new SingleSourceShortestPaths<Integer, NullValue>(236, 1000).
 //				run(Graph.fromTupleDataSet(env.
