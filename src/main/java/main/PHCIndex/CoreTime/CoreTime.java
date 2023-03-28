@@ -7,7 +7,6 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -123,13 +122,6 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
             out.collect(new Tuple2<>(vertex, coreTimeList));
         }
 
-    }
-
-    private static class kcore_KeySelector<K extends Comparable<K>> implements KeySelector<Tuple2<K, ArrayList<Tuple2<K, Integer>>>, K> {
-        @Override
-        public K getKey(Tuple2<K, ArrayList<Tuple2<K, Integer>>> value) throws Exception {
-            return value.f0;
-        }
     }
 }
 

@@ -27,13 +27,13 @@ public class Main {
 		final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
 //        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/graphT.txt";
+//        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
 //        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/graphTS.txt";
 //        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/iographT.txt";
-//        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
 		DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
 		Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
 //        new PHCIndex<Integer>(10).run(graph).sortPartition(0, Order.ASCENDING).print();
-        new PHCIndex<Integer>(10).run(graph);
+        new PHCIndex<Integer>(1000).run(graph);
 
 //        new SingleSourceShortestPaths<Integer, NullValue>(236, 1000).
 //				run(Graph.fromTupleDataSet(env.

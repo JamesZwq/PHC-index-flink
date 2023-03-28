@@ -13,11 +13,11 @@ public class CDVertexValue<K> {
     // <neighbor, <core, cnt>>
     private final HashMap<K, Tuple2<Integer, Integer>> neighbors;
 
-    public CDVertexValue(int core) {
+    public CDVertexValue(int core, HashMap<K, Tuple2<Integer, Integer>> neighbors) {
         this.core = core;
         this.oldCore = core;
         this.cnt = 0;
-        this.neighbors = new HashMap<>();
+        this.neighbors = neighbors;
     }
 
     public CDVertexValue(CDVertexValue<K> c) {

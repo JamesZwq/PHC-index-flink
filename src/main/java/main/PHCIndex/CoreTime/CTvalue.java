@@ -18,7 +18,7 @@ public class CTvalue<K> {
         this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(o -> o.getTime())).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.coreTime = new ArrayList<>();
         for(int i = 0; i < this.core; i++){
-            this.coreTime.add(CoreTime.maxTime);
+            this.coreTime.add(nebrTimeMap.get(i).getTime());
         }
     }
 
@@ -42,21 +42,8 @@ public class CTvalue<K> {
             return Integer.MAX_VALUE;
     }
 
-    public int getCoreInTime(int time) {
-        for(int i = core-1; i >= 0; i--){
-            if(coreTime.get(i) <= time){
-                return i+1;
-            }
-        }
-        return core;
-    }
-
     public void setCoreTime(int k, int time) {
-        for(int i = 0; i < k; i++){
-            if(coreTime.get(i) > time){
-                coreTime.set(i, time);
-            }
-        }
+        coreTime.set(k, time);
     }
 
     public int getCore() {

@@ -48,17 +48,8 @@ public class NeighborValue<K> {
         return this.core;
     }
 
-    public ArrayList<Integer> getCoreTime(int k) {
-        return coreTime;
-    }
-
-    public Integer getCoreInTime(int time) {
-        for(int i = core-1; i >= 0; i--){
-            if(coreTime.get(i) <= time){
-                return i+1;
-            }
-        }
-        return core;
+    public Integer getCoreTime(int k) {
+        return coreTime.get(k);
     }
 
     @Override
