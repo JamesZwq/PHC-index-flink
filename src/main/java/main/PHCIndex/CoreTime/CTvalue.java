@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class CTvalue<K> {
-    private int core;
+    private final int core;
     private final ArrayList<NeighborValue<K>> nebrTimeMap;
     private final ArrayList<Integer> coreTime;
 
@@ -35,23 +35,12 @@ public class CTvalue<K> {
         return coreTime;
     }
 
-    public int getCoreTime(int k) {
-        if(k < coreTime.size())
-            return coreTime.get(k);
-        else
-            return Integer.MAX_VALUE;
-    }
-
     public void setCoreTime(int k, int time) {
         coreTime.set(k, time);
     }
 
     public int getCore() {
         return core;
-    }
-
-    public void setCore(int core) {
-        this.core = core;
     }
 
     public ArrayList<NeighborValue<K>> getNebrTimeMap() {

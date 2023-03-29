@@ -47,7 +47,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                 })
                 .reduceGroup(new GroupReduceFunction<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
 //                    set the neighbor's degree
-                    //                    TODO: 如果一个点没有任何的邻居，会报错
+                    // 如果一个点没有任何的邻居，则删除这个点
                     @Override
                     public void reduce(Iterable<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>> values, Collector<Vertex<K, CDVertexValue<K>>> out) throws Exception {
                         HashMap<K, Tuple2<Integer, Integer>> map = new HashMap<>();
@@ -73,7 +73,6 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                         return v;
                     }
                 });
-
 
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
         return graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations).mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {

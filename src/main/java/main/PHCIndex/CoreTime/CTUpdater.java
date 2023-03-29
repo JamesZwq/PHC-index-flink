@@ -27,9 +27,6 @@ public class CTUpdater<K> extends GatherFunction<K, CTvalue<K>, CTMessage<K>> {
                 times.add(Math.max(kNeighborValue.getTime(), kNeighborValue.getCoreTime(k)));
             }
             times.sort(Comparator.naturalOrder());
-            if(times.size() <= k){
-                System.out.println("k: " + k + " coreTime: " + value.getCoreTime(k) + " times: " + times);
-            }
             value.setCoreTime(k, times.get(k));
         }
 

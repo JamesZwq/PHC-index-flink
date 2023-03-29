@@ -64,14 +64,6 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
                     }
                 });
 
-        vertex.sortPartition(new KeySelector<Vertex<K, CTvalue<K>>, K>() {
-            @Override
-            public K getKey(Vertex<K, CTvalue<K>> value) throws Exception {
-                return value.getId();
-            }
-        }, Order.ASCENDING)
-                .setParallelism(1).print();
-
         Graph<K, CTvalue<K>, Integer> graph = Graph.fromDataSet(vertex, input.getEdges(), input.getContext());
         return graph.runScatterGatherIteration(new CTMessager<K>(),
                         new CTUpdater<K>(),

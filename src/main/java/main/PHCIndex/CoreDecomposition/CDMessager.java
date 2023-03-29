@@ -11,27 +11,33 @@ public class CDMessager<K, EV> extends ScatterFunction<K, CDVertexValue<K>, CDMe
     @Override
     public void sendMessages(Vertex<K, CDVertexValue<K>> vertex) throws Exception {
         CDVertexValue<K> v = vertex.getValue();
-
 //        伪代码12-13行
-        boolean flag = false;
-        for (K u : vertex.getValue().getNeighbors().keySet()) {
-            if (v.getNeighbors().get(u).f1 < v.getCore()) {
-                flag = true;
-                break;
-            }
-        }
-        if (!flag) return;
+//        boolean flag = false;
+//        if(v.getCore() < v.getOldCore()) {
+//            for (K u : vertex.getValue().getNeighbors().keySet()) {
+//                if (v.getNeighbors().get(u).f1 < v.getCore()) {
+//                    flag = true;
+//                    break;
+//                }
+//            }
+//        }
+//        if (!flag) return;
 
-        for (K u : vertex.getValue().getNeighbors().keySet()) {
-            Tuple2<Integer, Integer> currNei = v.getNeighbors().get(u);
-            int core = currNei.f0;
-            if (core > v.getCore() && core <= v.getOldCore()) {
+        if(v.getCore() < v.getOldCore()) {
+            for (K u : vertex.getValue().getNeighbors().keySet()) {
+                Tuple2<Integer, Integer> currNei = v.getNeighbors().get(u);
+                int core = currNei.f0;
+                if (core > v.getCore() && core <= v.getOldCore()) {
 //                    如果需要减少cut(u)的值，那么就发送true
-                sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(), true));
-            } else {
+                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(), true));
+                } else {
 //                    如果不需要减少cut(u)的值，那么就发送false
-                sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(), false));
+                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(), false));
+                }
             }
         }
+//        for(Edge<K, EV> edge : getEdges()){
+//            sendMessageTo(edge.getTarget(), new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(),false));
+//        }
     }
 }

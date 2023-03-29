@@ -13,6 +13,7 @@ import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -36,8 +37,7 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
         DataSet<Vertex<K, Integer>> Cores = new CoreDecomposition<K, Integer>(maxIterations).run(input);
         Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
         new CoreTime<K>(maxIterations).run(result).sortPartition(0, Order.ASCENDING).print();
-//        Cores.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
-
+//        input.getContext().execute();
         return null;
     }
 
