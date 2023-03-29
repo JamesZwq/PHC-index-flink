@@ -13,14 +13,12 @@ import org.apache.flink.util.Collector;
 public class Main {
     public static void main(String[] args) throws Exception {
         // set up the execution environment
-
-//		Too few memory segments provided. Hash Table needs at least 33 memory segments.
         Configuration conf = new Configuration();
         conf.setInteger("taskmanager.memory.segment-size", 4096);
         final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
 //        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/graphT.txt";
-//        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
+//        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/graphT.txt";
+        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
         DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
 //        new PHCIndex<Integer>(10).run(graph).sortPartition(0, Order.ASCENDING).print();

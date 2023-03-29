@@ -15,8 +15,12 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
     public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) throws Exception {
         CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
         boolean decreased = false;
-
         for (CDMessage<K> msg : inMessages) {
+//                如果已经减少过了，那么久不在减少
+            if (msg.isDecreaseCnt() && !decreased) {
+                v.setCnt(v.getCnt() - 1);
+                decreased = true;
+            }
             v.setNeighbor(msg.getSource(), msg.getCore(), msg.getCnt());
         }
 
@@ -38,7 +42,6 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
             s += num.get(i);
             if (s >= i) {
                 v.setCore(i);
-//                setNewVertexValue(v);
                 break;
             }
         }

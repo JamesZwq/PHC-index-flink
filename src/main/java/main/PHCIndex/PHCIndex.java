@@ -2,8 +2,6 @@ package main.PHCIndex;
 
 import main.PHCIndex.CoreDecomposition.CoreDecomposition;
 import main.PHCIndex.CoreTime.CoreTime;
-import main.PHCIndex.InitCT.InitCTMessenger;
-import main.PHCIndex.InitCT.InitCTUpdater;
 import main.PHCIndex.PHCVertex.NeighborsValue;
 import main.PHCIndex.PHCVertex.VertexValue;
 import org.apache.flink.api.common.aggregators.LongSumAggregator;
@@ -36,8 +34,9 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
     public DataSet<Vertex<K, VertexValue<K>>> run(Graph<K, NullValue, Integer> input) throws Exception {
         DataSet<Vertex<K, Integer>> Cores = new CoreDecomposition<K, Integer>(maxIterations).run(input);
         Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
-        new CoreTime<K>(maxIterations).run(result).sortPartition(0, Order.ASCENDING).print();
-//        input.getContext().execute();
+//        new CoreTime<K>(maxIterations).run(result).sortPartition(0, Order.ASCENDING).print();
+        Cores.sortPartition(0, Order.ASCENDING).writeAsText("/Users/zhangwenqian/UNSW/tmp/b", FileSystem.WriteMode.OVERWRITE);
+        input.getContext().execute();
         return null;
     }
 
