@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class CTvalue<K> {
-    private final int core;
+
+    private int core;
     private final ArrayList<NeighborValue<K>> nebrTimeMap;
     private final ArrayList<Integer> coreTime;
 
@@ -55,6 +56,12 @@ public class CTvalue<K> {
         nebrTimeMap.sort(Comparator.comparing(o -> o.getTime()*-1));
     }
 
+    public void setCore(int core) {
+        this.core = core;
+        for(int i = 0; i < this.core; i++){
+            this.coreTime.add(nebrTimeMap.get(i).getTime());
+        }
+    }
 
     @Override
     public String toString() {

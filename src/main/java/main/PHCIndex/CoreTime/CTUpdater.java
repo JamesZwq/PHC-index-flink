@@ -24,12 +24,12 @@ public class CTUpdater<K> extends GatherFunction<K, CTvalue<K>, CTMessage<K>> {
             for(int i = 0; i < value.getNebrTimeMap().size(); i++){
                 NeighborValue<K> kNeighborValue = value.getNebrTimeMap().get(i);
                 if (kNeighborValue.getCore() <= k) continue;
+//                取最后一条边的时间和getCoreTime(k)中的最大值
                 times.add(Math.max(kNeighborValue.getTime(), kNeighborValue.getCoreTime(k)));
             }
             times.sort(Comparator.naturalOrder());
             value.setCoreTime(k, times.get(k));
         }
-
         if (!value.equals(vertex.getValue())) {
             setNewVertexValue(value);
         }

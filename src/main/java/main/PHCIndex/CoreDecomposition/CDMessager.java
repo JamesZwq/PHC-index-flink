@@ -36,8 +36,5 @@ public class CDMessager<K, EV> extends ScatterFunction<K, CDVertexValue<K>, CDMe
                 }
             }
         }
-//        for(Edge<K, EV> edge : getEdges()){
-//            sendMessageTo(edge.getTarget(), new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(),false));
-//        }
     }
 }

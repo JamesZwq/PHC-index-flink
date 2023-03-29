@@ -17,54 +17,46 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Integer, Integer, DataSet<Vertex<K, ArrayList<Integer>>>> {
-
     private final int maxIterations;
-    public static int maxTime;
 
     public CoreTime(int maxIterations) {
         this.maxIterations = maxIterations;
-        maxTime = 0;
     }
+
     @Override
     public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) throws Exception {
-        maxTime = input.getEdges().map(new MapFunction<Edge<K, Integer>, Tuple2<Integer,Integer>>() {
-            @Override
-            public Tuple2<Integer,Integer> map(Edge<K, Integer> edge) throws Exception {
-                return new Tuple2<>(edge.getValue(), edge.getValue());
-            }
-        }).maxBy(0).collect().get(0).f1;
 
-        MapOperator<Tuple2<Tuple2<K, ArrayList<NeighborValue<K>>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>> vertex = input
+        MapOperator<Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>> map = input
                 .getEdges()
                 .groupBy(0, 1)
                 .reduceGroup(new CTEdgeGroupReducer<>())
                 .name("CoreTime: Edge Group Reducer to get the minimum time")
-                .join(input.getVertices())
-                .where(1)
-                .equalTo(0)
-                .name("CoreTime: Join with the vertices to get the core number")
-                .groupBy(
-                        new KeySelector<Tuple2<Edge<K, Integer>, Vertex<K, Integer>>, K>() {
-                            @Override
-                            public K getKey(Tuple2<Edge<K, Integer>, Vertex<K, Integer>> value) throws Exception {
-                                return value.f0.getSource();
-                            }
+                .groupBy(0)
+                .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, CTvalue<K>>>() {
+                    @Override
+                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTvalue<K>>> out) throws Exception {
+                        K source = null;
+                        ArrayList<NeighborValue<K>> neighborValues = new ArrayList<>();
+                        for (Edge<K, Integer> edge : values) {
+                            source = edge.getSource();
+                            neighborValues.add(new NeighborValue<>(edge.getTarget(), edge.getValue(), 0));
                         }
-                )
-                .reduceGroup(new CTEdgeGroupReducerCoreTimeList<>())
-                .name("CoreTime: Edge Group Reducer to get the core time list with neighbours")
+                        out.collect(new Vertex<>(source, new CTvalue<>(0, neighborValues)));
+                    }
+                })
                 .join(input.getVertices())
                 .where(0)
                 .equalTo(0)
-                .name("CoreTime: Join with the vertices to get the core number of source")
-                .map(new MapFunction<Tuple2<Tuple2<K, ArrayList<NeighborValue<K>>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>>() {
+                .name("CoreTime: Join with the vertices to get the core number")
+                .map(new MapFunction<Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>>() {
                     @Override
-                    public Vertex<K, CTvalue<K>> map(Tuple2<Tuple2<K, ArrayList<NeighborValue<K>>>, Vertex<K, Integer>> value) throws Exception {
-                        return new Vertex<>(value.f0.f0, new CTvalue<>(value.f1.f1, value.f0.f1));
+                    public Vertex<K, CTvalue<K>> map(Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>> value) throws Exception {
+                        CTvalue<K> value1 = value.f0.getValue();
+                        value1.setCore(value.f1.getValue());
+                        return new Vertex<>(value.f0.getId(), value1);
                     }
                 });
-
-        Graph<K, CTvalue<K>, Integer> graph = Graph.fromDataSet(vertex, input.getEdges(), input.getContext());
+        Graph<K, CTvalue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
         return graph.runScatterGatherIteration(new CTMessager<K>(),
                         new CTUpdater<K>(),
                         maxIterations)
@@ -93,27 +85,6 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
             }
             out.collect(new Edge<>(source, target, minTime));
         }
-    }
-
-    private static class CTEdgeGroupReducerCoreTimeList<K extends Comparable<K>> implements GroupReduceFunction<Tuple2<Edge<K, Integer>, Vertex<K, Integer>>, Tuple2<K, ArrayList<NeighborValue<K>>>> {
-        @Override
-        public void reduce(Iterable<Tuple2<Edge<K, Integer>, Vertex<K, Integer>>> edges, Collector<Tuple2<K, ArrayList<NeighborValue<K>>>> out) {
-            ArrayList<NeighborValue<K>> coreTimeList = new ArrayList<>();
-            K vertex = null;
-            for (Tuple2<Edge<K, Integer>, Vertex<K, Integer>> edge : edges) {
-                coreTimeList.add(new NeighborValue<>(edge.f1.getId(), edge.f0.getValue(), edge.f1.getValue()));
-                vertex = edge.f0.getSource();
-            }
-            coreTimeList.sort(new Comparator<NeighborValue<K>>() {
-                @Override
-                public int compare(NeighborValue<K> o1, NeighborValue<K> o2) {
-                    return o1.getTime() - o2.getTime();
-                }
-            });
-            assert vertex != null;
-            out.collect(new Tuple2<>(vertex, coreTimeList));
-        }
-
     }
 }
 
