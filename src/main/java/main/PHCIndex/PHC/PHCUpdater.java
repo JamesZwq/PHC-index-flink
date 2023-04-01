@@ -1,88 +1,52 @@
 package main.PHCIndex.PHC;
 
-
-import main.PHCIndex.PHCVertex.NeighborsValue;
-import main.PHCIndex.PHCVertex.VertexValue;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.GatherFunction;
 import org.apache.flink.graph.spargel.MessageIterator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-/**
- * @param <K> The type of the vertex key.
- */
-public final class PHCUpdater<K> extends GatherFunction<K, VertexValue<K>, PHCMessage<K>> {
 
-    private final int timeEnd;
-
-    public PHCUpdater(int timeEnd) {
-        this.timeEnd = timeEnd;
-    }
+public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>> {
 
     @Override
-    public void preSuperstep() throws Exception {
-        super.preSuperstep();
-    }
-
-    @Override
-    public void updateVertex(Vertex<K, VertexValue<K>> vertex, MessageIterator<PHCMessage<K>> inMessages) throws Exception {
-        VertexValue<K> v = new VertexValue<>(vertex.getValue());
-        boolean noUpdate = true;
-        for (PHCMessage<K> msg : inMessages) {
-            v.getNeighbors().get(msg.getSource()).setCore(msg.getCore());
-            if(v.isCalculated()){
-                v.getNeighbors().get(msg.getSource()).setCTNtoZero();
-                if(msg.isShouldUpdate() && v.getCTNSize() < v.getCore()){
-                    noUpdate = false;
+    public void updateVertex(Vertex<K, PHCValue<K>> vertex, MessageIterator<PHCMessage<K>> inMessages) throws Exception {
+        PHCValue<K> phcValue = new PHCValue<>(vertex.getValue());
+        for (PHCMessage<K> message : inMessages) {
+            phcValue.addNeighbor(message.getVertexId(), message.getCoreTime());
+        }
+        boolean updated = false;
+        for (int time = 1; time < phcValue.getMaxTime(); time++) {
+            for (int core = 0; core < phcValue.getCore(); core++) {
+//                if (phcValue.getCoreTime().get(time - 1, core) == Integer.MAX_VALUE) break;
+                ArrayList<Integer> T = new ArrayList<>();
+                for(PHCNeighborValue<K> neighborValue : phcValue.getNeighbors()){
+                    int t = neighborValue.getMaxEdgeTime();
+                    if(t < time) continue;
+                    T.add(Math.max(t, neighborValue.getCoreTimes().get(time, core)));
                 }
-            } else {
-                noUpdate = false;
+                T.sort(Comparator.naturalOrder());
+                int old = phcValue.getCoreTime().get(time, core);
+                if (T.size() <= core) {
+                    phcValue.getCoreTime().set(time, core, Integer.MAX_VALUE);
+                } else {
+                    phcValue.getCoreTime().set(time, core, T.get(core));
+                }
+//                updated = updated || old != phcValue.getCoreTime().get(time, core);
+                if (old != phcValue.getCoreTime().get(time, core)) {
+                    updated = true;
+                    System.out.println("vertex: " + vertex.getId() + " updated at time: " + time + " core: " + core + " from: " + old + " to: " + phcValue.getCoreTime().get(time, core));
+                }
             }
+//            if (updated) {
+//                System.out.println("break at time: " + time);
+//                break;
+//            }
         }
-        if (noUpdate) {
-            setNewVertexValue(v);
-            return;
+        if (updated) {
+            setNewVertexValue(phcValue);
         }
-
-        v.setCalculatedCoreCN();
-        int oldCore = v.getCore();
-        v.setOldCore(oldCore);
-
-        List<Integer> cnt = new ArrayList<>();
-        for (int i = 0; i <= oldCore; ++i) {
-            cnt.add(0);
-        }
-
-        HashMap<K, NeighborsValue> neighbors = v.getNeighbors();
-        for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x < timeEnd)) continue;
-            int coreNei = neighbors.get(nei).getCore();
-            if (coreNei < oldCore) cnt.set(coreNei, cnt.get(coreNei) + 1);
-            else cnt.set(oldCore, cnt.get(oldCore) + 1);
-        }
-        int cd = 0;
-        for (int k = oldCore; k >= 0 ; --k) {
-            cd += cnt.get(k);
-            if(cd >= k){
-                v.setCore(k);
-                break;
-            }
-        }
-
-        v.resetCoreTimeNeighbors();
-        for (K nei : neighbors.keySet()) {
-            if(neighbors.get(nei).getEdgeTimes().stream().noneMatch(x -> x <= timeEnd)) continue;
-            int coreNei = neighbors.get(nei).getCore();
-            if (coreNei < v.getCore()) continue;
-            v.getNeighbors().get(nei).increaseCTN();
-        }
-
-        for(int tmp_k = oldCore; tmp_k >= v.getCore(); --tmp_k){
-            v.addCoreTime(tmp_k, timeEnd);
-        }
-
-        if(!v.equals(vertex.getValue())) setNewVertexValue(v);
     }
 }

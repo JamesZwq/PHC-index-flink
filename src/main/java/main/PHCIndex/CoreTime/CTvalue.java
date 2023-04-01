@@ -16,7 +16,7 @@ public class CTvalue<K> {
 
     public CTvalue(int core,ArrayList<NeighborValue<K>> nebrTimeMap) {
         this.core = core;
-        this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(o -> o.getTime())).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(NeighborValue::getTime)).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.coreTime = new ArrayList<>();
         for(int i = 0; i < this.core; i++){
             this.coreTime.add(nebrTimeMap.get(i).getTime());
@@ -67,7 +67,6 @@ public class CTvalue<K> {
     public String toString() {
         return "CTvalue{" +
                 "core=" + core +
-                " nebrSize=" + nebrTimeMap.stream().filter(t -> t.getCore() >= core).count() +
                 ", nebrTimeMap=" + nebrTimeMap +
                 ", coreTime=" + coreTime +
                 '}';

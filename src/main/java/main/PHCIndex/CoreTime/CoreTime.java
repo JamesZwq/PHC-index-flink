@@ -18,9 +18,12 @@ import java.util.Comparator;
 
 public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Integer, Integer, DataSet<Vertex<K, ArrayList<Integer>>>> {
     private final int maxIterations;
+    DataSet<Vertex<K, CTvalue<K>>> vertices;
+//    private
 
     public CoreTime(int maxIterations) {
         this.maxIterations = maxIterations;
+        vertices = null;
     }
 
     @Override
@@ -57,16 +60,19 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
                     }
                 });
         Graph<K, CTvalue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
-        return graph.runScatterGatherIteration(new CTMessager<K>(),
+        DataSet<Vertex<K, CTvalue<K>>> result = graph.runScatterGatherIteration(new CTMessager<K>(),
                         new CTUpdater<K>(),
                         maxIterations)
-                .getVertices()
+                .getVertices();
+        this.vertices = result;
+        return result
                 .map(new MapFunction<Vertex<K, CTvalue<K>>, Vertex<K, ArrayList<Integer>>>() {
-                    @Override
-                    public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTvalue<K>> value) throws Exception {
-                        return new Vertex<>(value.getId(), value.getValue().getCoreTime());
-                    }
-                });
+            @Override
+            public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTvalue<K>> value) throws Exception {
+                System.out.println(value);
+                return new Vertex<>(value.getId(), value.getValue().getCoreTime());
+            }
+        });
     }
 
     private static class CTEdgeGroupReducer<K extends Comparable<K>, EV extends Comparable<EV>> implements GroupReduceFunction<Edge<K, EV>, Edge<K, EV>> {
@@ -85,6 +91,10 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
             }
             out.collect(new Edge<>(source, target, minTime));
         }
+    }
+
+    public DataSet<Vertex<K, CTvalue<K>>> getVertices() {
+        return vertices;
     }
 }
 
