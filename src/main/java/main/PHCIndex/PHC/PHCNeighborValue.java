@@ -1,7 +1,6 @@
 package main.PHCIndex.PHC;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class PHCNeighborValue<K> {
@@ -20,10 +19,6 @@ public class PHCNeighborValue<K> {
         return edgeTimes.get(edgeTimes.size() - 1);
     }
 
-    public ArrayList<Integer> getEdgeTimes() {
-        return edgeTimes;
-    }
-
     public CoreTimes getCoreTimes() {
         return coreTimes;
     }
@@ -40,7 +35,7 @@ public class PHCNeighborValue<K> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PHCNeighborValue that = (PHCNeighborValue) o;
+        PHCNeighborValue<K> that = (PHCNeighborValue<K>) o;
         return Objects.equals(edgeTimes, that.edgeTimes) && Objects.equals(coreTimes, that.coreTimes);
     }
 

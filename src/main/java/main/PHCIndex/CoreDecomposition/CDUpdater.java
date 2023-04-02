@@ -1,6 +1,5 @@
 package main.PHCIndex.CoreDecomposition;
 
-import main.Main;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.GatherFunction;
@@ -12,7 +11,7 @@ import java.util.List;
 public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<K>> {
 
     @Override
-    public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) throws Exception {
+    public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) {
         CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
         boolean decreased = false;
         for (CDMessage<K> msg : inMessages) {
@@ -57,7 +56,7 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
         v.setCnt(s);
 
 //        update neighbors cnt
-        if(v.getCore() < v.getOldCore()) {
+        if (v.getCore() < v.getOldCore()) {
             for (K nei : v.getNeighbors().keySet()) {
                 Tuple2<Integer, Integer> u = v.getNeighbors().get(nei);
                 if (u.f0 > v.getCore() && u.f1 <= v.getOldCore() && u.f1 >= v.getCore()) {
@@ -66,7 +65,7 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
             }
         }
 
-        if(!v.equals(vertex.getValue())) {
+        if (!v.equals(vertex.getValue())) {
             setNewVertexValue(v);
         }
     }

@@ -6,9 +6,9 @@ import org.apache.flink.graph.spargel.ScatterFunction;
 
 public class PHCMessager<K> extends ScatterFunction<K, PHCValue<K>, PHCMessage<K>, Integer> {
     @Override
-    public void sendMessages(Vertex<K, PHCValue<K>> vertex) throws Exception {
+    public void sendMessages(Vertex<K, PHCValue<K>> vertex) {
         System.out.println("superstep: " + getSuperstepNumber());
-        for(Edge<K, Integer> edge : getEdges()) {
+        for (Edge<K, Integer> edge : getEdges()) {
             if (edge.getSource().equals(vertex.getId())) {
                 sendMessageTo(edge.getTarget(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime()));
             }

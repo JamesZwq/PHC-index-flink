@@ -1,9 +1,9 @@
 package main.PHCIndex.PHC;
 
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class PHCValue<K> {
     private final ArrayList<PHCNeighborValue<K>> neighbors;
@@ -12,20 +12,20 @@ public class PHCValue<K> {
 
     private final int maxTime;
 
-    public PHCValue(int core, ArrayList<Tuple3<K,ArrayList<Integer>,ArrayList<Integer>>> neighbors, ArrayList<Integer> coreTime, int maxTime) {
+    public PHCValue(int core, ArrayList<Tuple3<K, ArrayList<Integer>, ArrayList<Integer>>> neighbors, ArrayList<Integer> coreTime, int maxTime) {
         this.core = core;
 //        this.neighbors = neighbors;
         this.neighbors = new ArrayList<>();
-        for(Tuple3<K,ArrayList<Integer>,ArrayList<Integer>> neighbor : neighbors){
+        for (Tuple3<K, ArrayList<Integer>, ArrayList<Integer>> neighbor : neighbors) {
             ArrayList<ArrayList<Integer>> coreTimeNeighbor = new ArrayList<>();
-            for(int time = 0; time < maxTime; time++){
+            for (int time = 0; time < maxTime; time++) {
                 coreTimeNeighbor.add(new ArrayList<>(neighbor.f2));
             }
-            this.neighbors.add(new PHCNeighborValue<>(neighbor.f0,neighbor.f1, coreTimeNeighbor));
+            this.neighbors.add(new PHCNeighborValue<>(neighbor.f0, neighbor.f1, coreTimeNeighbor));
         }
         ArrayList<ArrayList<Integer>> ct = new ArrayList<>();
         this.maxTime = maxTime;
-        for(int i = 0; i < maxTime; i++){
+        for (int i = 0; i < maxTime; i++) {
             ct.add(new ArrayList<>(coreTime));
         }
         this.coreTime = new CoreTimes(ct);
@@ -54,7 +54,8 @@ public class PHCValue<K> {
     public int getMaxTime() {
         return maxTime;
     }
-    public void addNeighbor(K key, CoreTimes coreTime){
+
+    public void addNeighbor(K key, CoreTimes coreTime) {
         PHCNeighborValue<K> neighbor = neighbors.stream().filter(n -> n.getId().equals(key)).findFirst().get();
         neighbors.removeIf(n -> n.getId().equals(key));
         neighbor.setCoreTimes(coreTime);

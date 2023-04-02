@@ -1,7 +1,6 @@
 package main.PHCIndex.PHC;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class CoreTimes {
     private final ArrayList<ArrayList<Integer>> coreTime;
@@ -23,16 +22,16 @@ public class CoreTimes {
 
     public Integer get(int t, int k) {
         ArrayList<Integer> integers = coreTime.get(t);
-        if(integers.size() > k){
+        if (integers.size() > k) {
             return integers.get(k);
         }
         return Integer.MAX_VALUE;
     }
 
     public void set(int t, int k, int value) {
-        for(int time = t; time < coreTime.size(); time++){
+        for (int time = t; time < coreTime.size(); time++) {
             ArrayList<Integer> integers = coreTime.get(time);
-            if(integers.size() > k && integers.get(k) < value){
+            if (integers.size() > k && integers.get(k) < value) {
                 integers.set(k, value);
             }
         }

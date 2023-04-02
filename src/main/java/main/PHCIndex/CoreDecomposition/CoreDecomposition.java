@@ -6,7 +6,6 @@ import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.operators.JoinOperator;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
@@ -38,15 +37,15 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                 .join(degree)
                 .where(1)
                 .equalTo(0)
-                .groupBy(new KeySelector<Tuple2<Edge<K,EV>, Vertex<K, LongValue>>, K>() {
-//                    group by source
+                .groupBy(new KeySelector<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>, K>() {
+                    //                    group by source
                     @Override
                     public K getKey(Tuple2<Edge<K, EV>, Vertex<K, LongValue>> value) throws Exception {
                         return value.f0.getSource();
                     }
                 })
                 .reduceGroup(new GroupReduceFunction<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
-//                    set the neighbor's degree
+                    //                    set the neighbor's degree
                     // 如果一个点没有任何的邻居，则删除这个点
                     @Override
                     public void reduce(Iterable<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>> values, Collector<Vertex<K, CDVertexValue<K>>> out) throws Exception {
@@ -65,7 +64,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                 .where(0)
                 .equalTo(0)
                 .map(new MapFunction<Tuple2<Vertex<K, CDVertexValue<K>>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
-//                    set the source's degree
+                    //                    set the source's degree
                     @Override
                     public Vertex<K, CDVertexValue<K>> map(Tuple2<Vertex<K, CDVertexValue<K>>, Vertex<K, LongValue>> value) throws Exception {
                         Vertex<K, CDVertexValue<K>> v = value.f0;

@@ -19,8 +19,9 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K>, Integer, DataSet<Vertex<K, ArrayList<Tuple2<Integer,Integer>>>>> {
+public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K>, Integer, DataSet<Vertex<K, ArrayList<Tuple2<Integer, Integer>>>>> {
     private final int maxIterations;
+
     public PHC(int maxIterations) {
         this.maxIterations = maxIterations;
     }
@@ -77,11 +78,11 @@ public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K
         @Override
         public Vertex<K, PHCValue<K>> map(Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTValue<K>>> value) throws Exception {
             K source = value.f0.getId();
-            ArrayList<Tuple3<K,ArrayList<Integer>,ArrayList<Integer>>> neighborValues = new ArrayList<>();
+            ArrayList<Tuple3<K, ArrayList<Integer>, ArrayList<Integer>>> neighborValues = new ArrayList<>();
             HashMap<K, ArrayList<Integer>> neighborEdgeTimes = value.f0.getValue();
             CTValue<K> coreTimes = value.f1.getValue();
             ArrayList<NeighborValue<K>> nebrTimeMap = coreTimes.getNebrTimeMap();
-            for(NeighborValue<K> neighborValue : nebrTimeMap){
+            for (NeighborValue<K> neighborValue : nebrTimeMap) {
                 K neighbor = neighborValue.getKey();
 //                neighborValues.put(neighbor, new PHCNeighborValue(neighborEdgeTimes.get(neighbor),neighborValue.getCoreTime()));
                 neighborValues.add(new Tuple3<>(neighbor, neighborEdgeTimes.get(neighbor), neighborValue.getCoreTime()));

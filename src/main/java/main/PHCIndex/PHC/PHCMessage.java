@@ -1,7 +1,5 @@
 package main.PHCIndex.PHC;
 
-import java.util.ArrayList;
-
 public class PHCMessage<K> {
     private final K vertexId;
     private final CoreTimes coreTime;

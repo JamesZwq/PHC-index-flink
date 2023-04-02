@@ -6,12 +6,11 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class CDVertexValue<K> {
-    private int core;
-    private int cnt;
-
-    private int oldCore;
     // <neighbor, <core, cnt>>
     private final HashMap<K, Tuple2<Integer, Integer>> neighbors;
+    private int core;
+    private int cnt;
+    private int oldCore;
 
     public CDVertexValue(int core, HashMap<K, Tuple2<Integer, Integer>> neighbors) {
         this.core = core;

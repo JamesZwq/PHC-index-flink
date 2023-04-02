@@ -8,8 +8,9 @@ public class NeighborValue<K> {
     private final K key;
     private final Integer time;
     private final Integer core;
+
     /**
-     * @param key is the neighbor
+     * @param key  is the neighbor
      * @param time is the last edge time
      * @param core is the core number
      */
@@ -38,13 +39,15 @@ public class NeighborValue<K> {
         return coreTime;
     }
 
-    public K getKey(){
+    public K getKey() {
         return this.key;
     }
-    public int getTime(){
+
+    public int getTime() {
         return this.time;
     }
-    public int getCore(){
+
+    public int getCore() {
         return this.core;
     }
 

@@ -24,7 +24,7 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
     }
 
     @Override
-    public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) throws Exception {
+    public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) {
 
         MapOperator<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>> map = input
                 .getEdges()
@@ -34,7 +34,7 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
                 .groupBy(0)
                 .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, CTValue<K>>>() {
                     @Override
-                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTValue<K>>> out) throws Exception {
+                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTValue<K>>> out) {
                         K source = null;
                         ArrayList<NeighborValue<K>> neighborValues = new ArrayList<>();
                         for (Edge<K, Integer> edge : values) {
@@ -50,26 +50,30 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
                 .name("CoreTime: Join with the vertices to get the core number")
                 .map(new MapFunction<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>>() {
                     @Override
-                    public Vertex<K, CTValue<K>> map(Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>> value) throws Exception {
+                    public Vertex<K, CTValue<K>> map(Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>> value) {
                         CTValue<K> value1 = value.f0.getValue();
                         value1.setCore(value.f1.getValue());
                         return new Vertex<>(value.f0.getId(), value1);
                     }
                 });
         Graph<K, CTValue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
-        DataSet<Vertex<K, CTValue<K>>> result = graph.runScatterGatherIteration(new CTMessager<K>(),
-                        new CTUpdater<K>(),
+        DataSet<Vertex<K, CTValue<K>>> result = graph.runScatterGatherIteration(new CTMessager<>(),
+                        new CTUpdater<>(),
                         maxIterations)
                 .getVertices();
         this.vertices = result;
         return result
                 .map(new MapFunction<Vertex<K, CTValue<K>>, Vertex<K, ArrayList<Integer>>>() {
-            @Override
-            public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTValue<K>> value) throws Exception {
-                System.out.println(value);
-                return new Vertex<>(value.getId(), value.getValue().getCoreTime());
-            }
-        });
+                    @Override
+                    public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTValue<K>> value) {
+                        System.out.println(value);
+                        return new Vertex<>(value.getId(), value.getValue().getCoreTime());
+                    }
+                });
+    }
+
+    public DataSet<Vertex<K, CTValue<K>>> getVertices() {
+        return vertices;
     }
 
     private static class CTEdgeGroupReducer<K extends Comparable<K>, EV extends Comparable<EV>> implements GroupReduceFunction<Edge<K, EV>, Edge<K, EV>> {
@@ -88,10 +92,6 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
             }
             out.collect(new Edge<>(source, target, minTime));
         }
-    }
-
-    public DataSet<Vertex<K, CTValue<K>>> getVertices() {
-        return vertices;
     }
 }
 

@@ -10,14 +10,14 @@ import java.util.Comparator;
 public class CTUpdater<K> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
 
     @Override
-    public void updateVertex(Vertex<K, CTValue<K>> vertex, MessageIterator<CTMessage<K>> inMessages) throws Exception {
+    public void updateVertex(Vertex<K, CTValue<K>> vertex, MessageIterator<CTMessage<K>> inMessages) {
         CTValue<K> value = new CTValue<>(vertex.getValue());
         for (CTMessage<K> message : inMessages) {
             value.addNebrTimeMap(message.getSource(), message.getCore(), message.getCoreTime());
         }
-        for(int k = value.getCore()-1; k >= 0; k--){
+        for (int k = value.getCore() - 1; k >= 0; k--) {
             ArrayList<Integer> times = new ArrayList<>();
-            for(int i = 0; i < value.getNebrTimeMap().size(); i++){
+            for (int i = 0; i < value.getNebrTimeMap().size(); i++) {
                 NeighborValue<K> kNeighborValue = value.getNebrTimeMap().get(i);
                 if (kNeighborValue.getCore() <= k) continue;
 //                取最后一条边的时间和getCoreTime(k)中的最大值

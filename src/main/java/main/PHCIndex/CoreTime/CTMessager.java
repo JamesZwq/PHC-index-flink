@@ -8,10 +8,10 @@ import java.util.HashSet;
 
 public class CTMessager<K> extends ScatterFunction<K, CTValue<K>, CTMessage<K>, Integer> {
     @Override
-    public void sendMessages(Vertex<K, CTValue<K>> vertex) throws Exception {
+    public void sendMessages(Vertex<K, CTValue<K>> vertex) {
         HashSet<K> visited = new HashSet<>();
-        for(Edge<K, Integer> edge : getEdges()){
-            if(!visited.contains(edge.getTarget())){
+        for (Edge<K, Integer> edge : getEdges()) {
+            if (!visited.contains(edge.getTarget())) {
                 visited.add(edge.getTarget());
                 sendMessageTo(edge.getTarget(), new CTMessage<>(vertex.getId(), vertex.getValue().getCore(), vertex.getValue().getCoreTime()));
             }

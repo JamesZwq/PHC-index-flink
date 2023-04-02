@@ -1,18 +1,16 @@
 package main.PHCIndex.PHC;
 
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.GatherFunction;
 import org.apache.flink.graph.spargel.MessageIterator;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 
 public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>> {
 
     @Override
-    public void updateVertex(Vertex<K, PHCValue<K>> vertex, MessageIterator<PHCMessage<K>> inMessages) throws Exception {
+    public void updateVertex(Vertex<K, PHCValue<K>> vertex, MessageIterator<PHCMessage<K>> inMessages) {
         PHCValue<K> phcValue = new PHCValue<>(vertex.getValue());
         for (PHCMessage<K> message : inMessages) {
             phcValue.addNeighbor(message.getVertexId(), message.getCoreTime());
@@ -22,9 +20,9 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
             for (int core = 0; core < phcValue.getCore(); core++) {
 //                if (phcValue.getCoreTime().get(time - 1, core) == Integer.MAX_VALUE) break;
                 ArrayList<Integer> T = new ArrayList<>();
-                for(PHCNeighborValue<K> neighborValue : phcValue.getNeighbors()){
+                for (PHCNeighborValue<K> neighborValue : phcValue.getNeighbors()) {
                     int t = neighborValue.getMaxEdgeTime();
-                    if(t < time) continue;
+                    if (t < time) continue;
                     T.add(Math.max(t, neighborValue.getCoreTimes().get(time, core)));
                 }
                 T.sort(Comparator.naturalOrder());

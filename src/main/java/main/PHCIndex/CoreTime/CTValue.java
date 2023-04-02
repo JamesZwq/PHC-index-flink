@@ -6,15 +6,15 @@ import java.util.Objects;
 
 public class CTValue<K> {
 
-    private int core;
     private final ArrayList<NeighborValue<K>> nebrTimeMap;
     private final ArrayList<Integer> coreTime;
+    private int core;
 
     public CTValue(int core, ArrayList<NeighborValue<K>> nebrTimeMap) {
         this.core = core;
         this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(NeighborValue::getTime)).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.coreTime = new ArrayList<>();
-        for(int i = 0; i < this.core; i++){
+        for (int i = 0; i < this.core; i++) {
             this.coreTime.add(nebrTimeMap.get(i).getTime());
         }
     }
@@ -40,6 +40,13 @@ public class CTValue<K> {
         return core;
     }
 
+    public void setCore(int core) {
+        this.core = core;
+        for (int i = 0; i < this.core; i++) {
+            this.coreTime.add(nebrTimeMap.get(i).getTime());
+        }
+    }
+
     public ArrayList<NeighborValue<K>> getNebrTimeMap() {
         return nebrTimeMap;
     }
@@ -49,14 +56,7 @@ public class CTValue<K> {
         int time = curr.getTime();
         nebrTimeMap.removeIf(t -> t.getKey().equals(key));
         nebrTimeMap.add(new NeighborValue<>(key, time, core, new ArrayList<>(coreTime)));
-        nebrTimeMap.sort(Comparator.comparing(o -> o.getTime()*-1));
-    }
-
-    public void setCore(int core) {
-        this.core = core;
-        for(int i = 0; i < this.core; i++){
-            this.coreTime.add(nebrTimeMap.get(i).getTime());
-        }
+        nebrTimeMap.sort(Comparator.comparing(o -> o.getTime() * -1));
     }
 
     @Override

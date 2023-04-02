@@ -17,9 +17,11 @@ public class CDMessage<K> {
     public K getSource() {
         return source;
     }
+
     public int getCore() {
         return core;
     }
+
     public int getCnt() {
         return cnt;
     }
