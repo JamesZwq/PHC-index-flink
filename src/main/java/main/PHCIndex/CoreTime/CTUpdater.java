@@ -1,21 +1,17 @@
 package main.PHCIndex.CoreTime;
 
-import main.PHCIndex.CoreDecomposition.CDVertexValue;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.GatherFunction;
 import org.apache.flink.graph.spargel.MessageIterator;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
 
-public class CTUpdater<K> extends GatherFunction<K, CTvalue<K>, CTMessage<K>> {
+public class CTUpdater<K> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
 
     @Override
-    public void updateVertex(Vertex<K, CTvalue<K>> vertex, MessageIterator<CTMessage<K>> inMessages) throws Exception {
-        CTvalue<K> value = new CTvalue<>(vertex.getValue());
+    public void updateVertex(Vertex<K, CTValue<K>> vertex, MessageIterator<CTMessage<K>> inMessages) throws Exception {
+        CTValue<K> value = new CTValue<>(vertex.getValue());
         for (CTMessage<K> message : inMessages) {
             value.addNebrTimeMap(message.getSource(), message.getCore(), message.getCoreTime());
         }

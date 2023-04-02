@@ -1,20 +1,16 @@
 package main.PHCIndex.CoreTime;
 
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
-
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Objects;
 
-public class CTvalue<K> {
+public class CTValue<K> {
 
     private int core;
     private final ArrayList<NeighborValue<K>> nebrTimeMap;
     private final ArrayList<Integer> coreTime;
 
-    public CTvalue(int core,ArrayList<NeighborValue<K>> nebrTimeMap) {
+    public CTValue(int core, ArrayList<NeighborValue<K>> nebrTimeMap) {
         this.core = core;
         this.nebrTimeMap = nebrTimeMap.stream().sorted(Comparator.comparing(NeighborValue::getTime)).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.coreTime = new ArrayList<>();
@@ -23,7 +19,7 @@ public class CTvalue<K> {
         }
     }
 
-    public CTvalue(CTvalue<K> c) {
+    public CTValue(CTValue<K> c) {
         this.core = c.getCore();
         this.nebrTimeMap = new ArrayList<>();
         for (NeighborValue<K> n : c.getNebrTimeMap()) {
@@ -66,9 +62,9 @@ public class CTvalue<K> {
     @Override
     public String toString() {
         return "CTvalue{" +
-                "core=" + core +
-                ", nebrTimeMap=" + nebrTimeMap +
-                ", coreTime=" + coreTime +
+//                "core=" + core +
+//                ", nebrTimeMap=" + nebrTimeMap +
+                " coreTime=" + coreTime +
                 '}';
     }
 
@@ -77,7 +73,7 @@ public class CTvalue<K> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CTvalue<?> cTvalue = (CTvalue<?>) o;
+        CTValue<?> cTvalue = (CTValue<?>) o;
         return core == cTvalue.core && Objects.equals(coreTime, cTvalue.coreTime) && Objects.equals(nebrTimeMap, cTvalue.nebrTimeMap);
     }
 

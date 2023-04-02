@@ -2,9 +2,7 @@ package main.PHCIndex.CoreTime;
 
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
@@ -14,11 +12,10 @@ import org.apache.flink.graph.Vertex;
 import org.apache.flink.util.Collector;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Integer, Integer, DataSet<Vertex<K, ArrayList<Integer>>>> {
     private final int maxIterations;
-    DataSet<Vertex<K, CTvalue<K>>> vertices;
+    DataSet<Vertex<K, CTValue<K>>> vertices;
 //    private
 
     public CoreTime(int maxIterations) {
@@ -29,46 +26,46 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
     @Override
     public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) throws Exception {
 
-        MapOperator<Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>> map = input
+        MapOperator<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>> map = input
                 .getEdges()
                 .groupBy(0, 1)
                 .reduceGroup(new CTEdgeGroupReducer<>())
                 .name("CoreTime: Edge Group Reducer to get the minimum time")
                 .groupBy(0)
-                .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, CTvalue<K>>>() {
+                .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, CTValue<K>>>() {
                     @Override
-                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTvalue<K>>> out) throws Exception {
+                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTValue<K>>> out) throws Exception {
                         K source = null;
                         ArrayList<NeighborValue<K>> neighborValues = new ArrayList<>();
                         for (Edge<K, Integer> edge : values) {
                             source = edge.getSource();
                             neighborValues.add(new NeighborValue<>(edge.getTarget(), edge.getValue(), 0));
                         }
-                        out.collect(new Vertex<>(source, new CTvalue<>(0, neighborValues)));
+                        out.collect(new Vertex<>(source, new CTValue<>(0, neighborValues)));
                     }
                 })
                 .join(input.getVertices())
                 .where(0)
                 .equalTo(0)
                 .name("CoreTime: Join with the vertices to get the core number")
-                .map(new MapFunction<Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>>, Vertex<K, CTvalue<K>>>() {
+                .map(new MapFunction<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>>() {
                     @Override
-                    public Vertex<K, CTvalue<K>> map(Tuple2<Vertex<K, CTvalue<K>>, Vertex<K, Integer>> value) throws Exception {
-                        CTvalue<K> value1 = value.f0.getValue();
+                    public Vertex<K, CTValue<K>> map(Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>> value) throws Exception {
+                        CTValue<K> value1 = value.f0.getValue();
                         value1.setCore(value.f1.getValue());
                         return new Vertex<>(value.f0.getId(), value1);
                     }
                 });
-        Graph<K, CTvalue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
-        DataSet<Vertex<K, CTvalue<K>>> result = graph.runScatterGatherIteration(new CTMessager<K>(),
+        Graph<K, CTValue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
+        DataSet<Vertex<K, CTValue<K>>> result = graph.runScatterGatherIteration(new CTMessager<K>(),
                         new CTUpdater<K>(),
                         maxIterations)
                 .getVertices();
         this.vertices = result;
         return result
-                .map(new MapFunction<Vertex<K, CTvalue<K>>, Vertex<K, ArrayList<Integer>>>() {
+                .map(new MapFunction<Vertex<K, CTValue<K>>, Vertex<K, ArrayList<Integer>>>() {
             @Override
-            public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTvalue<K>> value) throws Exception {
+            public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTValue<K>> value) throws Exception {
                 System.out.println(value);
                 return new Vertex<>(value.getId(), value.getValue().getCoreTime());
             }
@@ -93,7 +90,7 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
         }
     }
 
-    public DataSet<Vertex<K, CTvalue<K>>> getVertices() {
+    public DataSet<Vertex<K, CTValue<K>>> getVertices() {
         return vertices;
     }
 }

@@ -16,9 +16,9 @@ public class Main {
         Configuration conf = new Configuration();
         conf.setInteger("taskmanager.memory.segment-size", 4096);
         final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
-//        env.setParallelism(1);
+        env.setParallelism(1);
 //        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/graphT.txt";
+        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphT.txt";
 //        String path = "/Users/zhangwenqian/Downloads/facebook/0_new.edges";
         DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();

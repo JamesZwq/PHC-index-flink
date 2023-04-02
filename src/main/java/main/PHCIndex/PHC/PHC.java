@@ -1,6 +1,6 @@
 package main.PHCIndex.PHC;
 
-import main.PHCIndex.CoreTime.CTvalue;
+import main.PHCIndex.CoreTime.CTValue;
 import main.PHCIndex.CoreTime.NeighborValue;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -10,7 +10,6 @@ import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.operators.SortPartitionOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -20,16 +19,16 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTvalue<K>, Integer, DataSet<Vertex<K, ArrayList<Tuple2<Integer,Integer>>>>> {
+public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K>, Integer, DataSet<Vertex<K, ArrayList<Tuple2<Integer,Integer>>>>> {
     private final int maxIterations;
     public PHC(int maxIterations) {
         this.maxIterations = maxIterations;
     }
 
     @Override
-    public DataSet<Vertex<K, ArrayList<Tuple2<Integer, Integer>>>> run(Graph<K, CTvalue<K>, Integer> input) throws Exception {
+    public DataSet<Vertex<K, ArrayList<Tuple2<Integer, Integer>>>> run(Graph<K, CTValue<K>, Integer> input) throws Exception {
         int maxTime = input.getEdges().max(2).collect().get(0).f2;
-        MapOperator<Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTvalue<K>>>, Vertex<K, PHCValue<K>>> vertex = input
+        MapOperator<Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTValue<K>>>, Vertex<K, PHCValue<K>>> vertex = input
                 .getEdges()
                 .groupBy(0)
                 .reduceGroup(new PHCEdgeGroupReducer<>())
@@ -68,7 +67,7 @@ public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTvalue<K
         }
     }
 
-    private static class PHCMapVertex<K extends Comparable<K>> implements MapFunction<Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTvalue<K>>>, Vertex<K, PHCValue<K>>> {
+    private static class PHCMapVertex<K extends Comparable<K>> implements MapFunction<Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTValue<K>>>, Vertex<K, PHCValue<K>>> {
         private final int maxTime;
 
         public PHCMapVertex(int maxTime) {
@@ -76,11 +75,11 @@ public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTvalue<K
         }
 
         @Override
-        public Vertex<K, PHCValue<K>> map(Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTvalue<K>>> value) throws Exception {
+        public Vertex<K, PHCValue<K>> map(Tuple2<Vertex<K, HashMap<K, ArrayList<Integer>>>, Vertex<K, CTValue<K>>> value) throws Exception {
             K source = value.f0.getId();
             ArrayList<Tuple3<K,ArrayList<Integer>,ArrayList<Integer>>> neighborValues = new ArrayList<>();
             HashMap<K, ArrayList<Integer>> neighborEdgeTimes = value.f0.getValue();
-            CTvalue<K> coreTimes = value.f1.getValue();
+            CTValue<K> coreTimes = value.f1.getValue();
             ArrayList<NeighborValue<K>> nebrTimeMap = coreTimes.getNebrTimeMap();
             for(NeighborValue<K> neighborValue : nebrTimeMap){
                 K neighbor = neighborValue.getKey();

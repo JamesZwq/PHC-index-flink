@@ -21,10 +21,6 @@ public class CoreTimes {
         return coreTime;
     }
 
-    public ArrayList<Integer> get(int t) {
-        return coreTime.get(t);
-    }
-
     public Integer get(int t, int k) {
         ArrayList<Integer> integers = coreTime.get(t);
         if(integers.size() > k){
@@ -40,19 +36,6 @@ public class CoreTimes {
                 integers.set(k, value);
             }
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CoreTimes coreTimes = (CoreTimes) o;
-        return Objects.equals(coreTime, coreTimes.coreTime);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(coreTime);
     }
 
     @Override

@@ -7,11 +7,10 @@ import java.util.*;
 
 public class PHCValue<K> {
     private final ArrayList<PHCNeighborValue<K>> neighbors;
-    private int core;
+    private final int core;
     private final CoreTimes coreTime;
-    private final ArrayList<ArrayList<Tuple2<Integer,Integer>>> PHC;
 
-    private int maxTime;
+    private final int maxTime;
 
     public PHCValue(int core, ArrayList<Tuple3<K,ArrayList<Integer>,ArrayList<Integer>>> neighbors, ArrayList<Integer> coreTime, int maxTime) {
         this.core = core;
@@ -25,11 +24,7 @@ public class PHCValue<K> {
             this.neighbors.add(new PHCNeighborValue<>(neighbor.f0,neighbor.f1, coreTimeNeighbor));
         }
         ArrayList<ArrayList<Integer>> ct = new ArrayList<>();
-        this.PHC = new ArrayList<>();
         this.maxTime = maxTime;
-        for(int i = 0; i <= core; i++){
-            PHC.add(new ArrayList<>());
-        }
         for(int i = 0; i < maxTime; i++){
             ct.add(new ArrayList<>(coreTime));
         }
@@ -40,7 +35,6 @@ public class PHCValue<K> {
         this.core = v.core;
         this.neighbors = new ArrayList<>(v.neighbors);
         this.coreTime = new CoreTimes(v.coreTime);
-        this.PHC = new ArrayList<>(v.PHC);
         this.maxTime = v.maxTime;
     }
 
@@ -60,10 +54,6 @@ public class PHCValue<K> {
     public int getMaxTime() {
         return maxTime;
     }
-
-    public ArrayList<ArrayList<Tuple2<Integer, Integer>>> getPHC() {
-        return PHC;
-    }
     public void addNeighbor(K key, CoreTimes coreTime){
         PHCNeighborValue<K> neighbor = neighbors.stream().filter(n -> n.getId().equals(key)).findFirst().get();
         neighbors.removeIf(n -> n.getId().equals(key));
@@ -81,11 +71,11 @@ public class PHCValue<K> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PHCValue<?> that = (PHCValue<?>) o;
-        return core == that.core && Objects.equals(neighbors, that.neighbors) && Objects.equals(coreTime, that.coreTime) && Objects.equals(PHC, that.PHC);
+        return core == that.core && Objects.equals(neighbors, that.neighbors) && Objects.equals(coreTime, that.coreTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(neighbors, core, coreTime, PHC);
+        return Objects.hash(neighbors, core, coreTime);
     }
 }
