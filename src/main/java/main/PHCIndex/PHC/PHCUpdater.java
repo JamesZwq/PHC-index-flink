@@ -38,10 +38,6 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
                     System.out.println("vertex: " + vertex.getId() + " updated at time: " + time + " core: " + core + " from: " + old + " to: " + phcValue.getCoreTime().get(time, core));
                 }
             }
-//            if (updated) {
-//                System.out.println("break at time: " + time);
-//                break;
-//            }
         }
         if (updated) {
             setNewVertexValue(phcValue);

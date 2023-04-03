@@ -48,8 +48,6 @@ public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K
     }
 
     private static class PHCEdgeGroupReducer<K extends Comparable<K>> implements GroupReduceFunction<Edge<K, Integer>, Vertex<K, HashMap<K, ArrayList<Integer>>>> {
-
-
         @Override
         public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, HashMap<K, ArrayList<Integer>>>> out) throws Exception {
             K source = null;
@@ -84,7 +82,6 @@ public class PHC<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K
             ArrayList<NeighborValue<K>> nebrTimeMap = coreTimes.getNebrTimeMap();
             for (NeighborValue<K> neighborValue : nebrTimeMap) {
                 K neighbor = neighborValue.getKey();
-//                neighborValues.put(neighbor, new PHCNeighborValue(neighborEdgeTimes.get(neighbor),neighborValue.getCoreTime()));
                 neighborValues.add(new Tuple3<>(neighbor, neighborEdgeTimes.get(neighbor), neighborValue.getCoreTime()));
             }
             return new Vertex<>(source, new PHCValue<>(coreTimes.getCore(), neighborValues, coreTimes.getCoreTime(), maxTime));
