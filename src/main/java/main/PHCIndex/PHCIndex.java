@@ -5,6 +5,8 @@ import main.PHCIndex.CoreTime.CTValue;
 import main.PHCIndex.CoreTime.CoreTime;
 import main.PHCIndex.PHC.PHC;
 import main.PHCIndex.PHC.PHCValue;
+import main.PHCIndex.PHC_times.PHC.PHC_times;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -28,10 +30,13 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
         CoreTime<K> kCoreTime = new CoreTime<>(maxIterations);
         DataSet<Vertex<K, ArrayList<Integer>>> CoreTimeR = kCoreTime.run(result);
         DataSet<Vertex<K, CTValue<K>>> vertices = kCoreTime.getVertices();
-//        vertices.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
         Graph<K, CTValue<K>, Integer> kcTvalueIntegerGraph = Graph.fromDataSet(vertices, input.getEdges(), input.getContext());
+//        CoreTimeR.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
+//        vertices.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
 //        Cores.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
-        new PHC<K>(maxIterations).run(kcTvalueIntegerGraph);
+        new PHC_times<K>(maxIterations).run(kcTvalueIntegerGraph);
+//        new PHC<K>(maxIterations).run(kcTvalueIntegerGraph);
+
         return null;
     }
 }

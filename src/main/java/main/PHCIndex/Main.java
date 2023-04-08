@@ -1,4 +1,4 @@
-package main;
+package main.PHCIndex;
 
 import main.PHCIndex.PHCIndex;
 import org.apache.flink.api.common.functions.FlatMapFunction;

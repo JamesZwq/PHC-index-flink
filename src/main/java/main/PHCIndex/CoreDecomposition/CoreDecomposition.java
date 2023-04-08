@@ -2,11 +2,14 @@
 
 package main.PHCIndex.CoreDecomposition;
 
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.operators.MapOperator;
+import org.apache.flink.api.java.operators.UnionOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
@@ -23,9 +26,11 @@ import java.util.HashMap;
 public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Integer>>> {
 
     private final int maxIterations;
+    private Graph<K, CDVertexValue<K>, EV> graph;
 
     public CoreDecomposition(int maxIterations) {
         this.maxIterations = maxIterations;
+        graph = null;
     }
 
     @Override
@@ -74,12 +79,37 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                 });
 
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
-        return graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations).mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {
+        Graph<K, CDVertexValue<K>, EV> kcdVertexValueEVGraph = graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations);
+        this.graph = kcdVertexValueEVGraph;
+//        kcdVertexValueEVGraph.getVertices().sortPartition(0, Order.ASCENDING).setParallelism(1).print();
+        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {
             @Override
             public Integer map(Vertex<K, CDVertexValue<K>> vertex) throws Exception {
                 return vertex.getValue().getCore();
             }
         }).getVertices();
+    }
+
+    public Graph<K, CDVertexValue<K>, EV> addEdge(Edge<K, EV> edge) throws Exception {
+//        if edge is exist, return
+        if (graph.getEdges().filter(new FilterFunction<Edge<K, EV>>() {
+            @Override
+            public boolean filter(Edge<K, EV> value) throws Exception {
+                return value.getSource().equals(edge.getSource()) && value.getTarget().equals(edge.getTarget());
+            }
+        }).count() > 0) {
+            return graph;
+        }
+        if (graph.getVertices().filter(new FilterFunction<Vertex<K, CDVertexValue<K>>>() {
+            @Override
+            public boolean filter(Vertex<K, CDVertexValue<K>> value) throws Exception {
+                return value.getId().equals(edge.getSource()) || value.getId().equals(edge.getTarget());
+            }
+        }).count() < 2) {
+            throw new Exception("vertex is not exist");
+        }
+        DataSet<Edge<K, EV>> edges = graph.getEdges().union(graph.getEdges().getExecutionEnvironment().fromElements(edge));
+        return Graph.fromDataSet(graph.getVertices(), graph.getEdges(), graph.getContext());
     }
 }
 

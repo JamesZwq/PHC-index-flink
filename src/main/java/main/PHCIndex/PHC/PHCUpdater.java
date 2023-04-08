@@ -18,7 +18,9 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
         boolean updated = false;
         for (int time = 1; time < phcValue.getMaxTime(); time++) {
             for (int core = 0; core < phcValue.getCore(); core++) {
-//                if (phcValue.getCoreTime().get(time - 1, core) == Integer.MAX_VALUE) break;
+                if (phcValue.getCoreTime().get(time, core) == Integer.MAX_VALUE) {
+                    break;
+                }
                 ArrayList<Integer> T = new ArrayList<>();
                 for (PHCNeighborValue<K> neighborValue : phcValue.getNeighbors()) {
                     int t = neighborValue.getMaxEdgeTime();
@@ -32,11 +34,7 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
                 } else {
                     phcValue.getCoreTime().set(time, core, T.get(core));
                 }
-//                updated = updated || old != phcValue.getCoreTime().get(time, core);
-                if (old != phcValue.getCoreTime().get(time, core)) {
-                    updated = true;
-                    System.out.println("vertex: " + vertex.getId() + " updated at time: " + time + " core: " + core + " from: " + old + " to: " + phcValue.getCoreTime().get(time, core));
-                }
+                updated = updated || old != phcValue.getCoreTime().get(time, core);
             }
         }
         if (updated) {
