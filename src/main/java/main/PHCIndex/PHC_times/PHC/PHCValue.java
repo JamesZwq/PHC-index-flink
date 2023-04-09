@@ -8,15 +8,17 @@ import java.util.Objects;
 
 public class PHCValue<K> {
     private final ArrayList<PHCNeighborValue<K>> neighbors;
-    private final int core;
-    private CoreTimes coreTime;
-    private CoreTimes oldCoreTimes;
     private final int maxTime;
-
     private final ArrayList<ArrayList<Tuple2<Integer, Integer>>> PHC_Index;
+    private int core;
+    private int newCore;
+    private final CoreTimes coreTime;
+    private CoreTimes oldCoreTimes;
+    private boolean isUpdated = false;
 
     public PHCValue(int core, ArrayList<Tuple3<K, ArrayList<Integer>, ArrayList<Integer>>> neighbors, ArrayList<Integer> coreTime, int maxTime) {
         this.core = core;
+        this.newCore = core;
         this.neighbors = new ArrayList<>();
         for (Tuple3<K, ArrayList<Integer>, ArrayList<Integer>> neighbor : neighbors) {
             this.neighbors.add(new PHCNeighborValue<>(neighbor.f0, neighbor.f1, neighbor.f2));
@@ -28,7 +30,11 @@ public class PHCValue<K> {
             PHC_Index.add(new ArrayList<>());
             PHC_Index.get(i).add(new Tuple2<>(1, coreTime.get(i)));
         }
-        this.oldCoreTimes = new CoreTimes(coreTime);
+        ArrayList<Integer> ot = new ArrayList<>();
+        for (int i = 0; i < core; i++) {
+            ot.add(0);
+        }
+        this.oldCoreTimes = new CoreTimes(ot);
     }
 
     public PHCValue(PHCValue<K> v) {
@@ -53,6 +59,16 @@ public class PHCValue<K> {
         return neighbors;
     }
 
+    public PHCNeighborValue<K> getNeighbors(K k) {
+        ArrayList<PHCNeighborValue<K>> neighbors = new ArrayList<>();
+        for (PHCNeighborValue<K> neighbor : this.neighbors) {
+            if (neighbor.getId().equals(k)) {
+                return neighbor;
+            }
+        }
+        return null;
+    }
+
     public ArrayList<Boolean> OldCT_CTD_diff() {
         ArrayList<Boolean> diff = new ArrayList<>();
         for (int i = 0; i < core; i++) {
@@ -65,6 +81,18 @@ public class PHCValue<K> {
         return core;
     }
 
+    public void setCore(int core) {
+        this.core = core;
+    }
+
+    public int getNewCore() {
+        return newCore;
+    }
+
+    public void setNewCore(int newCore) {
+        this.newCore = newCore;
+    }
+
     public CoreTimes getCoreTime() {
         return coreTime;
     }
@@ -73,11 +101,16 @@ public class PHCValue<K> {
         return maxTime;
     }
 
-    public void addNeighbor(K key, CoreTimes coreTime) {
+    public void addNeighbor(K key, CoreTimes coreTime, int core) {
         PHCNeighborValue<K> neighbor = neighbors.stream().filter(n -> n.getId().equals(key)).findFirst().get();
         neighbors.removeIf(n -> n.getId().equals(key));
         neighbor.setCoreTimes(coreTime);
+        neighbor.setCore(core);
         neighbors.add(neighbor);
+    }
+
+    public void reduceCore() {
+        this.newCore--;
     }
 
     public void addPHC_Index(int k, int from, int to) {
@@ -89,6 +122,14 @@ public class PHCValue<K> {
         }
     }
 
+    public boolean isUpdated() {
+        return isUpdated;
+    }
+
+    public void setUpdated(boolean updated) {
+        isUpdated = updated;
+    }
+
     @Override
     public String toString() {
         return PHC_IndexToString();
@@ -98,7 +139,7 @@ public class PHCValue<K> {
         StringBuilder sb = new StringBuilder();
         sb.append("\n");
         for (int i = 1; i < PHC_Index.size(); i++) {
-            sb.append("k = ").append(i+1).append(" : ");
+            sb.append("k = ").append(i + 1).append(" : ");
             for (Tuple2<Integer, Integer> t : PHC_Index.get(i)) {
                 sb.append(t).append(" ");
             }

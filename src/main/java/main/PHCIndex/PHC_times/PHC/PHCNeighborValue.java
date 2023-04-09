@@ -8,11 +8,14 @@ public class PHCNeighborValue<K> {
     private final ArrayList<Integer> edgeTimes;
     private CoreTimes coreTimes;
 
+    private int core;
+
     public PHCNeighborValue(K id, ArrayList<Integer> edgeTimes, ArrayList<Integer> coreTimes) {
         this.Id = id;
         this.edgeTimes = edgeTimes;
         this.edgeTimes.sort(Integer::compareTo);
         this.coreTimes = new CoreTimes(new ArrayList<>(coreTimes));
+        this.core = coreTimes.size();
     }
 
     public int getTimeAfter(int time) {
@@ -40,17 +43,26 @@ public class PHCNeighborValue<K> {
         return Id;
     }
 
+    public int getCore() {
+        return core;
+    }
+
+    public void setCore(int core) {
+        this.core = core;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PHCNeighborValue<K> that = (PHCNeighborValue<K>) o;
-        return Objects.equals(edgeTimes, that.edgeTimes) && Objects.equals(coreTimes, that.coreTimes);
+        PHCNeighborValue<?> that = (PHCNeighborValue<?>) o;
+        return core == that.core && Objects.equals(Id, that.Id) && Objects.equals(edgeTimes, that.edgeTimes) && Objects.equals(coreTimes, that.coreTimes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(edgeTimes, coreTimes);
+        return Objects.hash(Id, edgeTimes, coreTimes, core);
     }
 
     @Override

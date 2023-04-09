@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 public class PHC_times<K extends Comparable<K>> implements GraphAlgorithm<K, CTValue<K>, Integer, DataSet<Vertex<K, ArrayList<Tuple2<Integer, Integer>>>>> {
     private final int maxIterations;
+    public static int numUpdates = 0;
 
     public PHC_times(int maxIterations) {
         this.maxIterations = maxIterations;
@@ -40,6 +41,14 @@ public class PHC_times<K extends Comparable<K>> implements GraphAlgorithm<K, CTV
                 .map(new PHCMapVertex<>(maxTime));
         Graph<K, PHCValue<K>, Integer> graph = Graph.fromDataSet(vertex, input.getEdges(), input.getContext());
         for(int time = 0; time <= 8; time++){
+            graph.mapVertices(new MapFunction<Vertex<K, PHCValue<K>>, Vertex<K, PHCValue<K>>>() {
+                @Override
+                public Vertex<K, PHCValue<K>> map(Vertex<K, PHCValue<K>> value) throws Exception {
+                    int newCore = value.getValue().getNewCore();
+                    value.getValue().setCore(newCore);
+                    return value;
+                }
+            });
             graph = graph.runScatterGatherIteration(new PHCMessager<>(time), new PHCUpdater<>(time), maxIterations);
         }
 //        graph.getVertices().sortPartition(0, Order.ASCENDING).setParallelism(1).print();

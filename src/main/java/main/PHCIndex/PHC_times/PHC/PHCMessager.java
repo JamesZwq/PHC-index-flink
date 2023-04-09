@@ -5,6 +5,7 @@ import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.ScatterFunction;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class PHCMessager<K> extends ScatterFunction<K, PHCValue<K>, PHCMessage<K>, Integer> {
     int time;
@@ -15,16 +16,35 @@ public class PHCMessager<K> extends ScatterFunction<K, PHCValue<K>, PHCMessage<K
 
     @Override
     public void sendMessages(Vertex<K, PHCValue<K>> vertex) {
-//        for (Edge<K, Integer> edge : getEdges()) {
-//            if(edge.getValue() < time) continue;
-//            if (edge.getSource().equals(vertex.getId())) {
-//                sendMessageTo(edge.getTarget(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime()));
-//            }
-//        }
+        if(getSuperstepNumber() == 1){
+            ArrayList<Boolean> updatedAt = new ArrayList<>();
+            for(int i = 0; i < vertex.getValue().getCore(); i++){
+                updatedAt.add(true);
+            }
+            HashSet<Integer> visited = new HashSet<>();
+            for (Edge<K, Integer> edge : getEdges()) {
+                if(edge.getValue() != time && edge.getValue() != time-1) continue;
+                if(visited.contains(edge.getTarget().hashCode())) continue;
+                if (!edge.getSource().equals(vertex.getId())) continue;
+                if(vertex.getValue().getCore() < vertex.getValue().getNeighbors(edge.getTarget()).getCore()) continue;
+                visited.add(edge.getTarget().hashCode());
+                sendMessageTo(edge.getTarget(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime(), updatedAt, vertex.getValue().getCore()));
+            }
+            return;
+        }
+        if(!vertex.getValue().isUpdated()) return;
         ArrayList<Boolean> updatedAt = vertex.getValue().OldCT_CTD_diff();
         for(PHCNeighborValue<K> neighborValue : vertex.getValue().getNeighbors()){
             if(neighborValue.getMaxEdgeTime() < time) continue;
-            sendMessageTo(neighborValue.getId(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime()));
+//            int k = Math.min(vertex.getValue().getCore(), neighborValue.getCore());
+//            for(int i = 1; i < k; i++){
+//                if(!updatedAt.get(i)) continue;
+//                int timeAfter = neighborValue.getTimeAfter(time);
+//                if(timeAfter == time || timeAfter == time+1){
+//                    break;
+//                }
+//            }
+            sendMessageTo(neighborValue.getId(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime(), updatedAt, vertex.getValue().getCore()));
         }
     }
 }
