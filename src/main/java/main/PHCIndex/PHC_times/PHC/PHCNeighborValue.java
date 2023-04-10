@@ -19,9 +19,9 @@ public class PHCNeighborValue<K> {
     }
 
     public int getTimeAfter(int time) {
-        for(int i = 0; i < edgeTimes.size(); i++) {
-            if (edgeTimes.get(i) >= time) {
-                return edgeTimes.get(i);
+        for (Integer edgeTime : edgeTimes) {
+            if (edgeTime >= time) {
+                return edgeTime;
             }
         }
         return Integer.MAX_VALUE;
@@ -31,7 +31,7 @@ public class PHCNeighborValue<K> {
         return edgeTimes.get(edgeTimes.size() - 1);
     }
 
-    public CoreTimes getCoreTimes() {
+    public CoreTimes getCoreTime() {
         return coreTimes;
     }
 

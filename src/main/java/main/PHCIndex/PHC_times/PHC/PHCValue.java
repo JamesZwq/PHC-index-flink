@@ -39,6 +39,7 @@ public class PHCValue<K> {
 
     public PHCValue(PHCValue<K> v) {
         this.core = v.core;
+        this.newCore = v.newCore;
         this.neighbors = new ArrayList<>(v.neighbors);
         this.coreTime = new CoreTimes(v.coreTime);
         this.maxTime = v.maxTime;
@@ -114,12 +115,15 @@ public class PHCValue<K> {
     }
 
     public void addPHC_Index(int k, int from, int to) {
-//        PHC_Index.get(k).add(new Tuple2<>(from, to));
         if (PHC_Index.get(k).get(PHC_Index.get(k).size() - 1).f0 == from) {
             PHC_Index.get(k).get(PHC_Index.get(k).size() - 1).f1 = to;
         } else {
             PHC_Index.get(k).add(new Tuple2<>(from, to));
         }
+    }
+
+    public ArrayList<Tuple2<Integer, Integer>> getPHC_Index(int k) {
+        return PHC_Index.get(k);
     }
 
     public boolean isUpdated() {

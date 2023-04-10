@@ -33,17 +33,19 @@ public class PHCMessager<K> extends ScatterFunction<K, PHCValue<K>, PHCMessage<K
             return;
         }
         if(!vertex.getValue().isUpdated()) return;
-        ArrayList<Boolean> updatedAt = vertex.getValue().OldCT_CTD_diff();
         for(PHCNeighborValue<K> neighborValue : vertex.getValue().getNeighbors()){
+            ArrayList<Boolean> updatedAt = vertex.getValue().OldCT_CTD_diff();
             if(neighborValue.getMaxEdgeTime() < time) continue;
-//            int k = Math.min(vertex.getValue().getCore(), neighborValue.getCore());
-//            for(int i = 1; i < k; i++){
-//                if(!updatedAt.get(i)) continue;
-//                int timeAfter = neighborValue.getTimeAfter(time);
-//                if(timeAfter == time || timeAfter == time+1){
-//                    break;
-//                }
-//            }
+            int k = Math.min(vertex.getValue().getCore(), neighborValue.getCore());
+            for(int i = 1; i < k; i++){
+                if(!updatedAt.get(i)) continue;
+                int kt = Math.min(vertex.getValue().getCoreTime().get(i), time);
+                int ctNeighbor = neighborValue.getCoreTime().get(i);
+                int myTimeAfter = vertex.getValue().getCoreTime().get(i);
+                if(!(kt <= ctNeighbor && ctNeighbor < myTimeAfter)) {
+                    updatedAt.set(i, false);
+                }
+            }
             sendMessageTo(neighborValue.getId(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime(), updatedAt, vertex.getValue().getCore()));
         }
     }

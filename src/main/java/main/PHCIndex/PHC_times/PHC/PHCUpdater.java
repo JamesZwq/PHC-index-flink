@@ -22,6 +22,7 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
         PHCValue<K> phcValue = new PHCValue<>(vertex.getValue());
         phcValue.setUpdated(false);
         phcValue.setOldCTtoCT();
+        phcValue.setCore(phcValue.getNewCore());
         ArrayList<Boolean> updatedAt = new ArrayList<>();
         for(int i = 0; i < phcValue.getCore(); i++){
             updatedAt.add(false);
@@ -45,7 +46,7 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
             for (PHCNeighborValue<K> neighborValue : phcValue.getNeighbors()) {
                 int t = neighborValue.getMaxEdgeTime();
                 if (t < time) continue;
-                T.add(Math.max(neighborValue.getTimeAfter(time), neighborValue.getCoreTimes().get(core)));
+                T.add(Math.max(neighborValue.getTimeAfter(time), neighborValue.getCoreTime().get(core)));
             }
             T.sort(Comparator.naturalOrder());
             if (T.size() <= core) {
@@ -58,25 +59,21 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
                 updated = true;
                 phcValue.setUpdated(true);
                 phcValue.addPHC_Index(core, time, phcValue.getCoreTime().get(core));
-//                System.out.println("Updated at superstep " + getSuperstepNumber() + " at core " + core + " v: "+ vertex.getId() + " value (" + time + ", " + phcValue.getCoreTime().get(core) + ")");
-//                print as green
-                System.out.println("\033[0;32m" + "Updated at superstep " + getSuperstepNumber() + " at core " + core + " v: "+ vertex.getId() + " value (" + time + ", " + phcValue.getCoreTime().get(core) + ")" + "\033[0m");
+                System.out.println("\033[0;32m" + "superstep " + getSuperstepNumber() +
+                        " at core " + core +
+                        " v: "+ vertex.getId() +
+                        " value (" + time + ", " + phcValue.getCoreTime().get(core) + ")" + "\033[0m");
             } else {
                 numUpdates++;
-//                System.out.println("Not updated at superstep " + getSuperstepNumber());
-//                System.out.println("numUpdates = " + numUpdates);
-//                print as red
-                System.out.println("\033[0;31m" + "Not updated at superstep " + getSuperstepNumber() + " at core " + core + " v: "+ vertex.getId() + "\033[0m");
+                System.out.println("\033[0;31m" + "superstep " + getSuperstepNumber() +
+                        " at core " + core + " v: "+ vertex.getId() + " value (" + time + ", " + phcValue.getCoreTime().get(core) + ")" + "\033[0m");
                 System.out.println("\033[0;31m" + "numUpdates = " + numUpdates + "\033[0m");
             }
         }
         for(int i = 0; i < numRedused; i++){
-            System.out.println("Reduced superstep " + getSuperstepNumber() + " v: "+ vertex.getId() + " numRedused = " + numRedused);
             phcValue.reduceCore();
+            System.out.println("Reduced superstep " + getSuperstepNumber() + " v: "+ vertex.getId() + " numRedused = " + numRedused + " core = " + phcValue.getCore() + " newCore = " + phcValue.getNewCore());
         }
-//        if (updated) {
-//        if (!vertex.getValue().equals(phcValue)) {
-            setNewVertexValue(phcValue);
-//        }
+        setNewVertexValue(phcValue);
     }
 }

@@ -1,6 +1,7 @@
 package main.PHCIndex.PHC_times.PHC;
 
 import main.PHCIndex.CoreTime.CTValue;
+import main.PHCIndex.CoreTime.CoreTime;
 import main.PHCIndex.CoreTime.NeighborValue;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -41,17 +42,8 @@ public class PHC_times<K extends Comparable<K>> implements GraphAlgorithm<K, CTV
                 .map(new PHCMapVertex<>(maxTime));
         Graph<K, PHCValue<K>, Integer> graph = Graph.fromDataSet(vertex, input.getEdges(), input.getContext());
         for(int time = 0; time <= 8; time++){
-            graph.mapVertices(new MapFunction<Vertex<K, PHCValue<K>>, Vertex<K, PHCValue<K>>>() {
-                @Override
-                public Vertex<K, PHCValue<K>> map(Vertex<K, PHCValue<K>> value) throws Exception {
-                    int newCore = value.getValue().getNewCore();
-                    value.getValue().setCore(newCore);
-                    return value;
-                }
-            });
             graph = graph.runScatterGatherIteration(new PHCMessager<>(time), new PHCUpdater<>(time), maxIterations);
         }
-//        graph.getVertices().sortPartition(0, Order.ASCENDING).setParallelism(1).print();
         graph.getVertices().sortPartition(0, Order.ASCENDING).setParallelism(1).writeAsText("file:///Users/zhangwenqian/UNSW/3901/PHC-index-flink/myres.txt", FileSystem.WriteMode.OVERWRITE);
         graph.getContext().execute();
         return null;
