@@ -26,7 +26,9 @@ public class PHCMessager<K> extends ScatterFunction<K, PHCValue<K>, PHCMessage<K
                 if(edge.getValue() != time && edge.getValue() != time-1) continue;
                 if(visited.contains(edge.getTarget().hashCode())) continue;
                 if (!edge.getSource().equals(vertex.getId())) continue;
-                if(vertex.getValue().getCore() < vertex.getValue().getNeighbors(edge.getTarget()).getCore()) continue;
+                PHCNeighborValue<K> neighbors = vertex.getValue().getNeighbors(edge.getTarget());
+                if(vertex.getValue().getCore() < neighbors.getCore()) continue;
+                int k = Math.min(vertex.getValue().getCore(), neighbors.getCore());
                 visited.add(edge.getTarget().hashCode());
                 sendMessageTo(edge.getTarget(), new PHCMessage<>(vertex.getId(), vertex.getValue().getCoreTime(), updatedAt, vertex.getValue().getCore()));
             }

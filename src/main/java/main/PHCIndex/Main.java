@@ -14,12 +14,12 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // set up the execution environment
         Configuration conf = new Configuration();
-        conf.setInteger("taskmanager.memory.segment-size", 4096);
+        conf.setInteger("taskmanager.memory.segment-size", 8192);
         final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
         env.setParallelism(1);
 //        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphT.txt";
-//        String path = "/Users/zhangwenqian/Downloads/facebook/0_new_sort.edges";
+//        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphT.txt";
+        String path = "/Users/zhangwenqian/Downloads/facebook/0_new_sort.edges";
         DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
 //        new PHCIndex<Integer>(10).run(graph).sortPartition(0, Order.ASCENDING).print();

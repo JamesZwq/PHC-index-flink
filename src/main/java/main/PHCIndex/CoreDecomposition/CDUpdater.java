@@ -13,14 +13,24 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
     @Override
     public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) {
         CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
-        boolean decreased = false;
+//        boolean decreased = false;
         for (CDMessage<K> msg : inMessages) {
-//                如果已经减少过了，那么久不在减少
-            if (msg.isDecreaseCnt() && !decreased) {
-                v.setCnt(v.getCnt() - 1);
-                decreased = true;
-            }
             v.setNeighbor(msg.getSource(), msg.getCore(), msg.getCnt());
+        }
+
+        int t = 0;
+        for (K nei : v.getNeighbors().keySet()) {
+            int core = v.getNeighbors().get(nei).f0;
+            if (core >= v.getCore()) {
+                t++;
+            }
+        }
+
+        v.setCnt(t);
+
+        if(v.getCnt() >= v.getCore()) {
+            setNewVertexValue(v);
+            return;
         }
 
         v.setOldCore(v.getCore());
@@ -45,26 +55,11 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
             }
         }
 
-//        compute cnt
-        s = 0;
-        for (K nei : v.getNeighbors().keySet()) {
-            int core = v.getNeighbors().get(nei).f0;
-            if (core >= v.getCore()) {
-                s++;
-            }
+        if(v.getCore() != v.getOldCore()){
+            System.out.println("core: " + v.getCore() + " oldCore: " + v.getOldCore());
+        } else {
+            System.out.println("core: " + v.getCore() + " oldCore: " + v.getOldCore() + " no change");
         }
-        v.setCnt(s);
-
-//        update neighbors cnt
-        if (v.getCore() < v.getOldCore()) {
-            for (K nei : v.getNeighbors().keySet()) {
-                Tuple2<Integer, Integer> u = v.getNeighbors().get(nei);
-                if (u.f0 > v.getCore() && u.f1 <= v.getOldCore() && u.f1 >= v.getCore()) {
-                    v.setNeighbor(nei, u.f0, u.f1 - 1);
-                }
-            }
-        }
-
         if (!v.equals(vertex.getValue())) {
             setNewVertexValue(v);
         }

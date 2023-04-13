@@ -2,9 +2,11 @@ package main.PHCIndex.CoreTime;
 
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -24,7 +26,7 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
     }
 
     @Override
-    public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) {
+    public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) throws Exception {
 
         MapOperator<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>> map = input
                 .getEdges()

@@ -35,6 +35,7 @@ public class PHCUpdater<K> extends GatherFunction<K, PHCValue<K>, PHCMessage<K>>
                 }
             }
         }
+
         boolean updated = false;
         int numRedused = 0;
         for (int core = 1; core < phcValue.getCore(); core++) {

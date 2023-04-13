@@ -61,11 +61,7 @@ public class CTValue<K> {
 
     @Override
     public String toString() {
-        return "CTvalue{" +
-//                "core=" + core +
-//                ", nebrTimeMap=" + nebrTimeMap +
-                " coreTime=" + coreTime +
-                '}';
+        return coreTime.toString();
     }
 
 
