@@ -17,6 +17,8 @@ import java.util.ArrayList;
 
 public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Integer, Integer, DataSet<Vertex<K, ArrayList<Integer>>>> {
     private final int maxIterations;
+
+    public static int runTimes = 0;
     DataSet<Vertex<K, CTValue<K>>> vertices;
 //    private
 
@@ -28,34 +30,32 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
     @Override
     public DataSet<Vertex<K, ArrayList<Integer>>> run(Graph<K, Integer, Integer> input) throws Exception {
 
-        MapOperator<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>> map = input
+        DataSet<Vertex<K, CTValue<K>>> map = input
                 .getEdges()
                 .groupBy(0, 1)
                 .reduceGroup(new CTEdgeGroupReducer<>())
                 .name("CoreTime: Edge Group Reducer to get the minimum time")
                 .groupBy(0)
-                .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, CTValue<K>>>() {
+                .reduceGroup(new GroupReduceFunction<Edge<K, Integer>, Vertex<K, ArrayList<NeighborValue<K>>>>() {
                     @Override
-                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, CTValue<K>>> out) {
+                    public void reduce(Iterable<Edge<K, Integer>> values, Collector<Vertex<K, ArrayList<NeighborValue<K>>>> out) {
                         K source = null;
                         ArrayList<NeighborValue<K>> neighborValues = new ArrayList<>();
                         for (Edge<K, Integer> edge : values) {
                             source = edge.getSource();
                             neighborValues.add(new NeighborValue<>(edge.getTarget(), edge.getValue(), 0));
                         }
-                        out.collect(new Vertex<>(source, new CTValue<>(0, neighborValues)));
+                        out.collect(new Vertex<>(source, neighborValues));
                     }
                 })
                 .join(input.getVertices())
                 .where(0)
                 .equalTo(0)
                 .name("CoreTime: Join with the vertices to get the core number")
-                .map(new MapFunction<Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>>() {
+                .map(new MapFunction<Tuple2<Vertex<K, ArrayList<NeighborValue<K>>>, Vertex<K, Integer>>, Vertex<K, CTValue<K>>>() {
                     @Override
-                    public Vertex<K, CTValue<K>> map(Tuple2<Vertex<K, CTValue<K>>, Vertex<K, Integer>> value) {
-                        CTValue<K> value1 = value.f0.getValue();
-                        value1.setCore(value.f1.getValue());
-                        return new Vertex<>(value.f0.getId(), value1);
+                    public Vertex<K, CTValue<K>> map(Tuple2<Vertex<K, ArrayList<NeighborValue<K>>>, Vertex<K, Integer>> value) {
+                        return new Vertex<>(value.f0.getId(), new CTValue<>(value.f1.getValue(), value.f0.getValue()));
                     }
                 });
         Graph<K, CTValue<K>, Integer> graph = Graph.fromDataSet(map, input.getEdges(), input.getContext());
@@ -64,11 +64,12 @@ public class CoreTime<K extends Comparable<K>> implements GraphAlgorithm<K, Inte
                         maxIterations)
                 .getVertices();
         this.vertices = result;
+        result.sortPartition(0,Order.ASCENDING).setParallelism(1).writeAsText("/Users/zhangwenqian/UNSW/tmp/a", FileSystem.WriteMode.OVERWRITE);
+        result.getExecutionEnvironment().execute();
         return result
                 .map(new MapFunction<Vertex<K, CTValue<K>>, Vertex<K, ArrayList<Integer>>>() {
                     @Override
                     public Vertex<K, ArrayList<Integer>> map(Vertex<K, CTValue<K>> value) {
-                        System.out.println(value);
                         return new Vertex<>(value.getId(), value.getValue().getCoreTime());
                     }
                 });

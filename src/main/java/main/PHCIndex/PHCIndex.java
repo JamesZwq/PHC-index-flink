@@ -27,11 +27,12 @@ public class PHCIndex<K extends Comparable<K>> implements GraphAlgorithm<K, Null
     @Override
     public DataSet<Vertex<K, PHCValue<K>>> run(Graph<K, NullValue, Integer> input) throws Exception {
         DataSet<Vertex<K, Integer>> Cores = new CoreDecomposition<K, Integer>(maxIterations).run(input);
-        Cores.sortPartition(0, Order.ASCENDING).setParallelism(1).writeAsText("/Users/zhangwenqian/UNSW/tmp/b", FileSystem.WriteMode.OVERWRITE);
-        Cores.getExecutionEnvironment().execute();
-//        Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
-//        CoreTime<K> kCoreTime = new CoreTime<>(maxIterations);
-//        DataSet<Vertex<K, ArrayList<Integer>>> CoreTimeR = kCoreTime.run(result);
+//        Cores.sortPartition(0, Order.ASCENDING).setParallelism(1).writeAsText("/Users/zhangwenqian/UNSW/tmp/cdb", FileSystem.WriteMode.OVERWRITE);
+//        Cores.sortPartition(0, Order.ASCENDING).setParallelism(1).print();
+//        input.getContext().execute();
+        Graph<K, Integer, Integer> result = Graph.fromDataSet(Cores, input.getEdges(), input.getContext());
+        CoreTime<K> kCoreTime = new CoreTime<>(maxIterations);
+        DataSet<Vertex<K, ArrayList<Integer>>> CoreTimeR = kCoreTime.run(result);
 //        DataSet<Vertex<K, CTValue<K>>> vertices = kCoreTime.getVertices();
 //        Graph<K, CTValue<K>, Integer> kcTvalueIntegerGraph = Graph.fromDataSet(vertices, input.getEdges(), input.getContext());
 //        CoreTimeR.sortPartition(0, Order.ASCENDING).setParallelism(1).print();

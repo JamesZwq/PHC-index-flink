@@ -52,6 +52,9 @@ public class NeighborValue<K> {
     }
 
     public Integer getCoreTime(int k) {
+        if (k >= this.core) {
+            return Integer.MAX_VALUE;
+        }
         return coreTime.get(k);
     }
 

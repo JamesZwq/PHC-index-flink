@@ -9,13 +9,15 @@ import java.util.ArrayList;
 public class CDMessager<K, EV> extends ScatterFunction<K, CDVertexValue<K>, CDMessage<K>, EV> {
     @Override
     public void sendMessages(Vertex<K, CDVertexValue<K>> vertex) {
+//        System.out.println(vertex + "superstep: " + getSuperstepNumber());
         CDVertexValue<K> v = vertex.getValue();
         if (v.getCore() < v.getOldCore()) {
             for (K u : vertex.getValue().getNeighbors().keySet()) {
-                if (v.getNeighbors().get(u).f0 > v.getCore()) {
-                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getCnt(), false));
+                if (v.getNeighbors().get(u) > v.getCore()) {
+                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getOldCore(), false));
                 }
             }
         }
+//        System.out.println(toSend);
     }
 }

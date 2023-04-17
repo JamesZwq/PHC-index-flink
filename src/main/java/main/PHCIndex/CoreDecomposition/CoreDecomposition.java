@@ -37,7 +37,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
     public DataSet<Vertex<K, Integer>> run(Graph<K, NullValue, EV> input) throws Exception {
         Graph<K, NullValue, EV> evGraph = input.run(new Simplify<K, NullValue, EV>(false));
         DataSet<Vertex<K, LongValue>> degree = evGraph.run(new VertexInDegree<K, NullValue, EV>());
-        MapOperator<Tuple2<Vertex<K, CDVertexValue<K>>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>> map1 = evGraph
+        DataSet<Vertex<K, CDVertexValue<K>>> map1 = evGraph
                 .getEdges()
                 .join(degree)
                 .where(1)
@@ -49,32 +49,32 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                         return value.f0.getSource();
                     }
                 })
-                .reduceGroup(new GroupReduceFunction<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
+                .reduceGroup(new GroupReduceFunction<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>, Vertex<K, Tuple2<Integer, HashMap<K,Integer>>>>() {
                     //                    set the neighbor's degree
                     // 如果一个点没有任何的邻居，则删除这个点
                     @Override
-                    public void reduce(Iterable<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>> values, Collector<Vertex<K, CDVertexValue<K>>> out) throws Exception {
-                        HashMap<K, Tuple2<Integer, Integer>> map = new HashMap<>();
+                    public void reduce(Iterable<Tuple2<Edge<K, EV>, Vertex<K, LongValue>>> values, Collector<Vertex<K, Tuple2<Integer,HashMap<K,Integer>>>> out) throws Exception {
+                        HashMap<K, Integer> map = new HashMap<>();
                         int core = Integer.MAX_VALUE;
                         K source = null;
                         for (Tuple2<Edge<K, EV>, Vertex<K, LongValue>> value : values) {
                             source = value.f0.getSource();
                             Vertex<K, LongValue> v = value.f1;
-                            map.put(v.getId(), new Tuple2<>(Integer.parseInt(v.getValue().toString()), 0));
+                            map.put(v.getId(), Integer.parseInt(v.getValue().toString()));
                         }
-                        out.collect(new Vertex<>(source, new CDVertexValue<K>(core, map)));
+                        out.collect(new Vertex<>(source, new Tuple2<>(core, map)));
                     }
                 })
                 .join(degree)
                 .where(0)
                 .equalTo(0)
-                .map(new MapFunction<Tuple2<Vertex<K, CDVertexValue<K>>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
+                .map(new MapFunction<Tuple2<Vertex<K, Tuple2<Integer, HashMap<K,Integer>>>, Vertex<K, LongValue>>, Vertex<K, CDVertexValue<K>>>() {
                     //                    set the source's degree
                     @Override
-                    public Vertex<K, CDVertexValue<K>> map(Tuple2<Vertex<K, CDVertexValue<K>>, Vertex<K, LongValue>> value) throws Exception {
-                        Vertex<K, CDVertexValue<K>> v = value.f0;
-                        v.getValue().setCore(Integer.parseInt(value.f1.getValue().toString()));
-                        return v;
+                    public Vertex<K, CDVertexValue<K>> map(Tuple2<Vertex<K, Tuple2<Integer, HashMap<K,Integer>>>, Vertex<K, LongValue>> value) throws Exception {
+//                        Vertex<K, CDVertexValue<K>> v = value.f0;
+//                        v.getValue().setCore(Integer.parseInt(value.f1.getValue().toString()));
+                        return new Vertex<>(value.f0.getId(), new CDVertexValue<K>(Integer.parseInt(value.f1.getValue().toString()), value.f0.getValue().f1));
                     }
                 });
 

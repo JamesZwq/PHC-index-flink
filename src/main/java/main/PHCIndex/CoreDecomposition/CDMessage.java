@@ -3,14 +3,14 @@ package main.PHCIndex.CoreDecomposition;
 public class CDMessage<K> {
     private final K source;
     private final int core;
-    private final int cnt;
+    private final int oldCore;
 
     private final boolean decreaseCnt;
 
-    public CDMessage(K neighbor, int core, int cnt, boolean decreaseCnt) {
+    public CDMessage(K neighbor, int core, int oldCore, boolean decreaseCnt) {
         this.source = neighbor;
         this.core = core;
-        this.cnt = cnt;
+        this.oldCore = oldCore;
         this.decreaseCnt = decreaseCnt;
     }
 
@@ -22,8 +22,8 @@ public class CDMessage<K> {
         return core;
     }
 
-    public int getCnt() {
-        return cnt;
+    public int getOldCore() {
+        return oldCore;
     }
 
     public boolean isDecreaseCnt() {
