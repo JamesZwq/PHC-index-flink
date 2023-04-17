@@ -13,12 +13,12 @@ import org.apache.flink.util.Collector;
 public class Main {
     public static void main(String[] args) throws Exception {
         // set up the execution environment
-        Configuration conf = new Configuration();
-        conf.setString("taskmanager.memory.network.fraction", "0.2");
-        conf.setString("taskmanager.memory.network.min", "64mb");
-        final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
-        env.setParallelism(1);
-//        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+//        Configuration conf = new Configuration();
+//        conf.setString("taskmanager.memory.network.fraction", "0.2");
+//        conf.setString("taskmanager.memory.network.min", "64mb");
+//        final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
+//        env.setParallelism(1);
+        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 //        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphT.txt";
 //        String path = "/Users/zhangwenqian/Downloads/bio-CE-LC/bio-CE-LC_sorted_coverd.edges";
 //        String path = "/Users/zhangwenqian/Downloads/facebook/0_new_sort.edges";

@@ -14,7 +14,7 @@ public class CDMessager<K, EV> extends ScatterFunction<K, CDVertexValue<K>, CDMe
         if (v.getCore() < v.getOldCore()) {
             for (K u : vertex.getValue().getNeighbors().keySet()) {
                 if (v.getNeighbors().get(u) > v.getCore()) {
-                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore(), v.getOldCore(), false));
+                    sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore()));
                 }
             }
         }

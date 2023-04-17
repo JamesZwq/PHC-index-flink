@@ -13,32 +13,18 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
     public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) {
         CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
 //        boolean decreased = false;
-        ArrayList<K> toSend = new ArrayList<>();
         for (CDMessage<K> msg : inMessages) {
-            toSend.add(msg.getSource());
-            v.setNeighbor(msg.getSource(), msg.getCore());
+            v.setCnts(msg.getCore(), v.getCnts().get(msg.getCore()) + 1);
 
-//            int minCore = Math.min(msg.getCore(), v.getCnts().size()-1);
-//            v.setCnts(minCore, v.getCnts().get(minCore) + 1);
-            if(msg.getCore() <= v.getCnts().size()-1){
-                v.setCnts(msg.getCore(), v.getCnts().get(msg.getCore()) + 1);
-            }
+            int minOldCore = Math.min(v.getNeighbors().get(msg.getSource()),v.getCnts().size()-1);
+            v.setCnts(minOldCore, v.getCnts().get(minOldCore) - 1);
 
-            if(msg.getOldCore() >= v.getOldCore()){
+            if(minOldCore >= v.getOldCore()){
                 v.setCnt(v.getCnt() - 1);
             }
 
-//            int minOldCore = Math.min(msg.getOldCore(), v.getCnts().size()-1);
-//            v.setCnts(minOldCore, v.getCnts().get(minOldCore) - 1);
-            if (msg.getOldCore() <= v.getCnts().size()-1) {
-                v.setCnts(msg.getOldCore(), v.getCnts().get(msg.getOldCore()) - 1);
-            }
-
-            if(msg.getCore() >= v.getOldCore()){
-                v.setCnt(v.getCnt() + 1);
-            }
+            v.setNeighbor(msg.getSource(), msg.getCore());
         }
-//        System.out.println(vertex.getId() + " " + toSend);
 
         int numCnt = v.getCnt();
         for (int i = v.getCore(); i < v.getOldCore(); i++) {

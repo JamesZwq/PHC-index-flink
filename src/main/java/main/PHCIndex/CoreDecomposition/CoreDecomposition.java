@@ -60,7 +60,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                         for (Tuple2<Edge<K, EV>, Vertex<K, LongValue>> value : values) {
                             source = value.f0.getSource();
                             Vertex<K, LongValue> v = value.f1;
-                            map.put(v.getId(), Integer.parseInt(v.getValue().toString()));
+                            map.put(v.getId(), Integer.parseInt(v.getValue().toString())+1);
                         }
                         out.collect(new Vertex<>(source, new Tuple2<>(core, map)));
                     }

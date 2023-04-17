@@ -21,7 +21,7 @@ public class CDVertexValue<K> {
             cnts.add(0);
         }
         for (K nei : neighbors.keySet()) {
-            int k = neighbors.get(nei)+1;//old core
+            int k = neighbors.get(nei);//old core
             k = Math.min(k, core);
             cnts.set(k, cnts.get(k) + 1);
         }
