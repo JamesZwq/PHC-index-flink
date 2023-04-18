@@ -12,7 +12,8 @@ public class CTMessager<K> extends ScatterFunction<K, CTValue<K>, CTMessage<K>, 
     public void sendMessages(Vertex<K, CTValue<K>> vertex) {
         ArrayList<Boolean> updateAtOrigin = vertex.getValue().diffCoreTime();
         if(updateAtOrigin.contains(true)){
-            for(NeighborValue<K> neighborValue : vertex.getValue().getNebrTimeMap()){
+            ArrayList<NeighborValue<K>> nebrTimeMap = vertex.getValue().getNebrTimeMap();
+            for(NeighborValue<K> neighborValue : nebrTimeMap){
                 ArrayList<Boolean> updateAt = new ArrayList<>(updateAtOrigin);
                 for(int i = 0; i < neighborValue.getCore() && i < vertex.getValue().getCore(); i++){
                     if(vertex.getValue().getCoreTime(i) <= neighborValue.getTime()) updateAt.set(i, false);
@@ -20,7 +21,7 @@ public class CTMessager<K> extends ScatterFunction<K, CTValue<K>, CTMessage<K>, 
                 if (updateAt.contains(true))
                     sendMessageTo(neighborValue.getKey(), new CTMessage<>(vertex.getId(), vertex.getValue().getCore(), vertex.getValue().getCoreTime(), updateAt));
                 else {
-//                    System.out.println("No need to send message to " + neighborValue.getKey() + " by " + vertex.getId() + " at " + getSuperstepNumber());
+                    break;
                 }
             }
         }

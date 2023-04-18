@@ -83,11 +83,16 @@ public class CTValue<K> {
     }
 
     public void addNebrTimeMap(K key, Integer core, ArrayList<Integer> coreTime) {
-        NeighborValue<K> curr = nebrTimeMap.stream().filter(t -> t.getKey().equals(key)).findFirst().get();
+        int index = -1;
+        for (int i = 0; i < nebrTimeMap.size(); i++) {
+            if (nebrTimeMap.get(i).getKey().equals(key)) {
+                index = i;
+                break;
+            }
+        }
+        NeighborValue<K> curr = nebrTimeMap.get(index);
         int time = curr.getTime();
-        nebrTimeMap.removeIf(t -> t.getKey().equals(key));
-        nebrTimeMap.add(new NeighborValue<>(key, time, core, new ArrayList<>(coreTime)));
-        nebrTimeMap.sort(Comparator.comparing(o -> o.getTime() * -1));
+        nebrTimeMap.set(index, new NeighborValue<>(key, time, core, new ArrayList<>(coreTime)));
     }
 
     @Override

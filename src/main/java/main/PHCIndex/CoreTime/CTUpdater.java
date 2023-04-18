@@ -21,25 +21,16 @@ public class CTUpdater<K> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
             }
         }
         value.setOldCoreTime(value.getCoreTime());
-        for (int k = value.getCore() - 1; k >= 0; k--) {
-            if (!updateAt.get(k)) continue;
-            ArrayList<Integer> times = new ArrayList<>();
-            int cnt = 0;
-            for (NeighborValue<K> kNeighborValue : value.getNebrTimeMap()) {
-                if (kNeighborValue.getCore() <= k) continue;
-                if (Math.max(kNeighborValue.getTime(), kNeighborValue.getCoreTime(k)) <= value.getCoreTime(k)) {
-                    cnt++;
-                    if (cnt > k) break;
-                }
-            }
-            if (cnt > k) {
+        for (int k = 0; k < value.getCore(); k++) {
+            if (!updateAt.get(k)) {
                 continue;
             }
+            ArrayList<Integer> times = new ArrayList<>();
             for (int i = 0; i < value.getNebrTimeMap().size(); i++) {
                 NeighborValue<K> kNeighborValue = value.getNebrTimeMap().get(i);
-                if (kNeighborValue.getCore() <= k) continue;
-//                compare the min time of the kth core of the neighbors
-                times.add(Math.max(kNeighborValue.getTime(), kNeighborValue.getCoreTime(k)));
+                if (kNeighborValue.getCore() > k){
+                    times.add(Math.max(kNeighborValue.getTime(), kNeighborValue.getCoreTime(k)));
+                }
             }
             times.sort(Comparator.naturalOrder());
             value.setCoreTime(k, times.get(k));

@@ -38,29 +38,13 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
             return;
         }
         v.setOldCore(v.getCore());
-//        计算local core
-        List<Integer> num = new ArrayList<>();
-        for (int i = 0; i <= v.getCore(); i++) {
-            num.add(0);
-        }
-
-        for (K nei : v.getNeighbors().keySet()) {
-            int core = v.getNeighbors().get(nei);
-            int min = Math.min(core, v.getCore());
-            num.set(min, num.get(min) + 1);
-        }
-
-        int s = 0;
-        for (int i = v.getOldCore(); i >= 0; i--) {
-            s += num.get(i);
-            if (s >= i) {
+        for (int i = v.getCore() - 1; i >= 0; i--) {
+            numCnt += v.getCnts().get(i);
+            if (numCnt >= i) {
                 v.setCore(i);
                 break;
             }
         }
-//        System.out.println(vertex.getId() + " " + v);
-        if (!v.equals(vertex.getValue())) {
-            setNewVertexValue(v);
-        }
+        setNewVertexValue(v);
     }
 }
