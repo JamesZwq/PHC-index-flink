@@ -8,23 +8,20 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class CTUpdater<K> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
+public class CTUpdater<K extends Comparable<K>> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
 
     @Override
     public void updateVertex(Vertex<K, CTValue<K>> vertex, MessageIterator<CTMessage<K>> inMessages) {
         CTValue<K> value = new CTValue<>(vertex.getValue());
-        ArrayList<Boolean> updateAt = vertex.getValue().diffCoreTime();
+        ArrayList<K> resFrom = new ArrayList<>();
         for (CTMessage<K> message : inMessages) {
+            resFrom.add(message.getSource());
             value.addNebrTimeMap(message.getSource(), message.getCore(), message.getCoreTime());
-            for (int i = 0; i < message.getCore() && i < value.getCore(); i++) {
-                if (message.getUpdateAt().get(i)) updateAt.set(i, true);
-            }
         }
+        resFrom.sort(Comparator.naturalOrder());
+        System.out.println("\u001B[32m" + vertex.getId()  + " resFrom: \n" + resFrom + "\u001B[0m");
         value.setOldCoreTime(value.getCoreTime());
         for (int k = 0; k < value.getCore(); k++) {
-            if (!updateAt.get(k)) {
-                continue;
-            }
             ArrayList<Integer> times = new ArrayList<>();
             for (int i = 0; i < value.getNebrTimeMap().size(); i++) {
                 NeighborValue<K> kNeighborValue = value.getNebrTimeMap().get(i);
@@ -35,6 +32,8 @@ public class CTUpdater<K> extends GatherFunction<K, CTValue<K>, CTMessage<K>> {
             times.sort(Comparator.naturalOrder());
             value.setCoreTime(k, times.get(k));
         }
+        System.out.println("id " + vertex.getId() + " coreTime \n" + value.getCoreTime() + "\n oldCoreTime \n" + value.getOldCoreTime());
+        System.out.println("updated: " + !value.getCoreTime().equals(value.getOldCoreTime()));
         setNewVertexValue(value);
     }
 }

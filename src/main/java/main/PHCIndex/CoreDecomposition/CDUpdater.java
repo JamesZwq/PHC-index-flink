@@ -14,7 +14,12 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
         CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
 //        boolean decreased = false;
         for (CDMessage<K> msg : inMessages) {
-            v.setCnts(msg.getCore(), v.getCnts().get(msg.getCore()) + 1);
+            int minCore = Math.min(msg.getCore(),v.getCnts().size()-1);
+            v.setCnts(minCore, v.getCnts().get(minCore) + 1);
+
+            if (minCore >= v.getOldCore()) {
+                v.setCnt(v.getCnt() + 1);
+            }
 
             int minOldCore = Math.min(v.getNeighbors().get(msg.getSource()),v.getCnts().size()-1);
             v.setCnts(minOldCore, v.getCnts().get(minOldCore) - 1);
@@ -32,12 +37,11 @@ public class CDUpdater<K> extends GatherFunction<K, CDVertexValue<K>, CDMessage<
         }
         v.setCnt(numCnt);
 
+        v.setOldCore(v.getCore());
         if(numCnt >= v.getCore()) {
-            v.setOldCore(v.getCore());
             setNewVertexValue(v);
             return;
         }
-        v.setOldCore(v.getCore());
         for (int i = v.getCore() - 1; i >= 0; i--) {
             numCnt += v.getCnts().get(i);
             if (numCnt >= i) {

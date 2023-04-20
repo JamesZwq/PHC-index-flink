@@ -8,13 +8,10 @@ public class CTMessage<K> {
     private final int core;
     private final ArrayList<Integer> coreTime;
 
-    private final List<Boolean> updateAt;
-
-    public CTMessage(K neighbor, int core, ArrayList<Integer> coreTime, List<Boolean> updateAt) {
+    public CTMessage(K neighbor, int core, ArrayList<Integer> coreTime) {
         this.source = neighbor;
         this.core = core;
         this.coreTime = coreTime;
-        this.updateAt = updateAt;
     }
 
     public K getSource() {
@@ -27,10 +24,5 @@ public class CTMessage<K> {
 
     public ArrayList<Integer> getCoreTime() {
         return coreTime;
-    }
-
-    public List<Boolean> getUpdateAt() {
-
-        return updateAt;
     }
 }
