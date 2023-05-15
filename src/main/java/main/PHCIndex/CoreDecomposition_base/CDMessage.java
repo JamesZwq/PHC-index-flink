@@ -1,4 +1,4 @@
-package main.PHCIndex.CoreDecomposition;
+package main.PHCIndex.CoreDecomposition_base;
 
 public class CDMessage<K> {
     private final K source;

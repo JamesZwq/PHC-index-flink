@@ -1,6 +1,5 @@
 package main.PHCIndex;
 
-import main.PHCIndex.PHCIndex;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
@@ -12,22 +11,22 @@ import org.apache.flink.util.Collector;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        // set up the execution environment
         Configuration conf = new Configuration();
         conf.setString("taskmanager.memory.network.fraction", "0.2");
         conf.setString("taskmanager.memory.network.min", "64mb");
         final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
         env.setParallelism(1);
 //        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphT.txt";
+//        String path = "/Users/zhangwenqian/Downloads/socfb-Baylor93/socfb-Baylor93.txt";
+        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphTNew.txt";
 //        String path = "/Users/zhangwenqian/Downloads/bio-CE-LC/bio-CE-LC_sorted_coverd.edges";
-//        String path = "/Users/z/hangwenqian/Downloads/facebook/0_new_sort.edges";
+//        String path = "/Users/zhangwenqian/Downloads/facebook/0_new_sort.edges";
 //        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphTNew.txt";
 //        String path = "/Users/zhangwenqian/Downloads/socfb-Baylor93/socfb-Baylor93_time.txt";
+//        String path = "/Users/zhangwenqian/Downloads/socfb-Baylor93/socfb-Baylor93_time_lag.txt";
         DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
-//        new PHCIndex<Integer>(10).run(graph).sortPartition(0, Order.ASCENDING).print();
-        new PHCIndex<Integer>(100).run(graph);
+        new PHCIndex<Integer>(100000).run(graph);
     }
 
     public static class readGraph implements FlatMapFunction<String, Tuple3<Integer, Integer, Integer>> {

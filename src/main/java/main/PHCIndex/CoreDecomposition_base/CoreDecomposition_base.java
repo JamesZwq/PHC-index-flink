@@ -1,15 +1,11 @@
 // I/O Efficient Core Graph Decomposition at Web Scale
 
-package main.PHCIndex.CoreDecomposition;
+package main.PHCIndex.CoreDecomposition_base;
 
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.operators.MapOperator;
-import org.apache.flink.api.java.operators.UnionOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
@@ -23,11 +19,11 @@ import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 
-public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Integer>>> {
+public class CoreDecomposition_base<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Integer>>> {
 
     private final int maxIterations;
 
-    public CoreDecomposition(int maxIterations) {
+    public CoreDecomposition_base(int maxIterations) {
         this.maxIterations = maxIterations;
     }
 
