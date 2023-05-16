@@ -8,17 +8,17 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
 
     @Override
     public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) {
-        CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
+        CDVertexValue<K> v = vertex.getValue();
         for (CDMessage<K> msg : inMessages) {
-            int minCore = Math.min(msg.getCore(),v.getCnts().size()-1);
-            v.setCnts(minCore, v.getCnts().get(minCore) + 1);
+            int minCore = Math.min(msg.getCore(),v.getDegree());
+            v.setCnts(minCore, v.getCnts()[minCore] + 1);
 
             if (msg.getCore() >= v.getCore()) {
                 v.setCnt(v.getCnt() + 1);
             }
 
-            int minOldCore = Math.min(v.getNeighbors().get(msg.getSource()),v.getCnts().size()-1);
-            v.setCnts(minOldCore, v.getCnts().get(minOldCore) - 1);
+            int minOldCore = Math.min(v.getNeighbors().get(msg.getSource()),v.getDegree());
+            v.setCnts(minOldCore, v.getCnts()[minOldCore] - 1);
 
             if(v.getNeighbors().get(msg.getSource()) >= v.getCore()){
                 v.setCnt(v.getCnt() - 1);
@@ -33,7 +33,7 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
             return;
         }
         for (int i = v.getCore()-1; i >= 0; i--) {
-            numCnt += v.getCnts().get(i);
+            numCnt += v.getCnts()[i];
             if (numCnt >= i) {
                 v.setCore(i);
                 v.setCnt(numCnt);

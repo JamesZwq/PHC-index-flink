@@ -10,28 +10,35 @@ import java.util.Objects;
 public class CDVertexValue<K> {
     private final HashMap<K, Integer> neighbors;
     private int core;
-    private final ArrayList<Integer> cnts;
+    private final int[] cnts;
     private int cnt;
     private int oldCore;
+    final private int degree;
+
+    public int getDegree() {
+        return degree;
+    }
 
     public CDVertexValue(int core, HashMap<K, Integer> neighbors) {
         this.core = core;
+        this.degree = core;
         this.oldCore = core+1;
-        this.cnts = new ArrayList<>();
+        this.cnts = new int[core+1];
         this.neighbors = neighbors;
         for (int i = 0; i <= this.core; i++) {
-            cnts.add(0);
+            this.cnts[i] = 0;
         }
-        for (K nei : neighbors.keySet()) {
-            int k = neighbors.get(nei);//old core
-            k = Math.min(k, core);
-            cnts.set(k, cnts.get(k) + 1);
+        for (Integer nei : new ArrayList<>(neighbors.values())) {
+            int k = Math.min(nei, core);
+            this.cnts[k] = this.cnts[k] + 1;
         }
-        this.cnt = cnts.get(core);
+        this.cnt = this.cnts[core];
+
     }
 
     public CDVertexValue(CDVertexValue<K> c) {
         this.core = c.getCore();
+        this.degree = c.getDegree();
         this.oldCore = c.getOldCore();
         this.cnts = c.getCnts();
         this.neighbors = new HashMap<>(c.getNeighbors());
@@ -54,11 +61,11 @@ public class CDVertexValue<K> {
         this.core = core;
     }
 
-    public ArrayList<Integer> getCnts() {
+    public int[] getCnts() {
         return cnts;
     }
     public void setCnts(int k, int val) {
-        this.cnts.set(k, val);
+        this.cnts[k] = val;
     }
 
     public HashMap<K, Integer> getNeighbors() {

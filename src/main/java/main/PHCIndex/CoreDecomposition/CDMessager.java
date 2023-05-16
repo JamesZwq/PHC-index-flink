@@ -1,10 +1,9 @@
 package main.PHCIndex.CoreDecomposition;
 
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.spargel.ScatterFunction;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 public class CDMessager<K extends Comparable<K>, EV> extends ScatterFunction<K, CDVertexValue<K>, CDMessage<K>, EV> {
     @Override
@@ -16,6 +15,11 @@ public class CDMessager<K extends Comparable<K>, EV> extends ScatterFunction<K, 
                     sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore()));
                 }
             }
+//            for (Map.Entry<K, Integer> u : vertex.getValue().getNeighbors().entrySet()) {
+//                if (u.getValue() > v.getCore()) {
+//                    sendMessageTo(u.getKey(), new CDMessage<>(vertex.getId(), v.getCore()));
+//                }
+//            }
         }
     }
 }
