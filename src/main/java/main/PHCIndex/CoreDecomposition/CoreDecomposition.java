@@ -74,8 +74,6 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                     }
                 });
 
-//        map1.print();
-
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
         Graph<K, CDVertexValue<K>, EV> kcdVertexValueEVGraph = graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations);
         return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {

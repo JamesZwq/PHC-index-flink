@@ -29,22 +29,17 @@ public class Main {
 //        String path = "/Users/zhangwenqian/UNSW/3901/PHC-index-flink/sortedGraphTNew.txt";
 //        String path = "/Users/zhangwenqian/Downloads/socfb-Baylor93/socfb-Baylor93_time.txt";
         String path = "/Users/zhangwenqian/Downloads/socfb-Baylor93/socfb-Baylor93_time_lag.txt";
+//        String path = "/Users/zhangwenqian/Downloads/socfb-A-anon/socfb-A-anon.txt";
         DataSet<Tuple3<Integer, Integer, Integer>> edges = env.readTextFile(path).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, Integer> graph = Graph.fromTupleDataSet(edges, env).getUndirected();
         new PHCIndex<Integer>(100000).run(graph);
-
     }
 
     public static class readGraph implements FlatMapFunction<String, Tuple3<Integer, Integer, Integer>> {
         @Override
         public void flatMap(String value, Collector<Tuple3<Integer, Integer, Integer>> out) {
             String[] split = value.split(" ");
-//            int time = Integer.parseInt(split[2]);
-//            int start = 2;
-//            int end = 8;
-//            if(time >= start && time <= end){
             out.collect(new Tuple3<>(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2])));
-//            }
         }
     }
 }

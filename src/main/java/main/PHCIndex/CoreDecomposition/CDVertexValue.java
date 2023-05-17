@@ -25,9 +25,6 @@ public class CDVertexValue<K> {
         this.oldCore = core+1;
         this.cnts = new int[core+1];
         this.neighbors = neighbors;
-        for (int i = 0; i <= this.core; i++) {
-            this.cnts[i] = 0;
-        }
         for (Integer nei : new ArrayList<>(neighbors.values())) {
             int k = Math.min(nei, core);
             this.cnts[k] = this.cnts[k] + 1;
@@ -89,12 +86,12 @@ public class CDVertexValue<K> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CDVertexValue<?> that = (CDVertexValue<?>) o;
-        return core == that.core && cnts == that.cnts && oldCore == that.oldCore && Objects.equals(neighbors, that.neighbors);
+        return core == that.core && oldCore == that.oldCore && Objects.equals(neighbors, that.neighbors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(core, cnts, oldCore, neighbors);
+        return Objects.hash(core, oldCore, neighbors);
     }
 
 
