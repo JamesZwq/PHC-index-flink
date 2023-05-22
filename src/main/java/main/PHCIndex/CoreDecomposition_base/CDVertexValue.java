@@ -1,24 +1,18 @@
 package main.PHCIndex.CoreDecomposition_base;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class CDVertexValue<K> {
     private final HashMap<K, Integer> neighbors;
     private int core;
-    private int oldCore;
+    private boolean changed;
+    public int numMsg = 0;
 
     public CDVertexValue(int core, HashMap<K, Integer> neighbors) {
         this.core = core;
-        this.oldCore = core+1;
+        this.changed = true;
         this.neighbors = neighbors;
-    }
-
-    public CDVertexValue(CDVertexValue<K> c) {
-        this.core = c.getCore();
-        this.oldCore = c.getOldCore();
-        this.neighbors = new HashMap<>(c.getNeighbors());
     }
 
     public int getCore() {
@@ -35,12 +29,16 @@ public class CDVertexValue<K> {
         this.neighbors.put(neighbor, core);
     }
 
-    public int getOldCore() {
-        return oldCore;
+    public boolean getChanged() {
+        return changed;
     }
 
-    public void setOldCore(int oldCore) {
-        this.oldCore = oldCore;
+    public void setChanged() {
+        this.changed = true;
+    }
+
+    public void setUnchanged() {
+        this.changed = false;
     }
 
     @Override
@@ -48,12 +46,12 @@ public class CDVertexValue<K> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CDVertexValue<?> that = (CDVertexValue<?>) o;
-        return core == that.core && oldCore == that.oldCore && Objects.equals(neighbors, that.neighbors);
+        return core == that.core && changed == that.changed && Objects.equals(neighbors, that.neighbors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(core, oldCore, neighbors);
+        return Objects.hash(core, changed, neighbors);
     }
 
 
@@ -61,7 +59,7 @@ public class CDVertexValue<K> {
     public String toString() {
         return "CDVertexValue{" +
                 "core=" + core +
-                ", oldCore=" + oldCore +
+                ", oldCore=" + changed +
                 ", neighbors=" + neighbors +
                 '}';
     }

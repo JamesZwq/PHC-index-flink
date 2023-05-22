@@ -10,6 +10,7 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.operators.UnionOperator;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
@@ -23,7 +24,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 
-public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Integer>>> {
+public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Tuple2<Integer,Integer>>>> {
 
     private final int maxIterations;
 
@@ -32,9 +33,9 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
     }
 
     @Override
-    public DataSet<Vertex<K, Integer>> run(Graph<K, NullValue, EV> input) throws Exception {
-        Graph<K, NullValue, EV> evGraph = input.run(new Simplify<K, NullValue, EV>(false));
-        DataSet<Vertex<K, LongValue>> degree = evGraph.run(new VertexInDegree<K, NullValue, EV>());
+    public DataSet<Vertex<K, Tuple2<Integer,Integer>>> run(Graph<K, NullValue, EV> input) throws Exception {
+        Graph<K, NullValue, EV> evGraph = input.run(new Simplify<>(false));
+        DataSet<Vertex<K, LongValue>> degree = evGraph.run(new VertexInDegree<>());
         DataSet<Vertex<K, CDVertexValue<K>>> map1 = evGraph
                 .getEdges()
                 .join(degree)
@@ -70,16 +71,15 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                     //                    set the source's degree
                     @Override
                     public Vertex<K, CDVertexValue<K>> map(Tuple2<Vertex<K, Tuple2<Integer, HashMap<K,Integer>>>, Vertex<K, LongValue>> value) throws Exception {
-                        return new Vertex<>(value.f0.getId(), new CDVertexValue<K>(Integer.parseInt(value.f1.getValue().toString()), value.f0.getValue().f1));
+                        return new Vertex<>(value.f0.getId(), new CDVertexValue<>(Integer.parseInt(value.f1.getValue().toString()), value.f0.getValue().f1));
                     }
                 });
-
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
         Graph<K, CDVertexValue<K>, EV> kcdVertexValueEVGraph = graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations);
-        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {
+        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Tuple2<Integer,Integer>>() {
             @Override
-            public Integer map(Vertex<K, CDVertexValue<K>> vertex) throws Exception {
-                return vertex.getValue().getCore();
+            public Tuple2<Integer,Integer> map(Vertex<K, CDVertexValue<K>> vertex) {
+                return new Tuple2<>(vertex.getValue().getCore(), vertex.getValue().numMsg);
             }
         }).getVertices();
     }

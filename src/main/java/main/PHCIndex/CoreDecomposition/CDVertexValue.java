@@ -1,10 +1,7 @@
 package main.PHCIndex.CoreDecomposition;
 
-import com.google.common.collect.Maps;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class CDVertexValue<K> {
@@ -12,8 +9,9 @@ public class CDVertexValue<K> {
     private int core;
     private final int[] cnts;
     private int cnt;
-    private int oldCore;
+    private boolean changed;
     final private int degree;
+    public int numMsg = 0;
 
     public int getDegree() {
         return degree;
@@ -22,7 +20,7 @@ public class CDVertexValue<K> {
     public CDVertexValue(int core, HashMap<K, Integer> neighbors) {
         this.core = core;
         this.degree = core;
-        this.oldCore = core+1;
+        this.changed = true;
         this.cnts = new int[core+1];
         this.neighbors = neighbors;
         for (Integer nei : new ArrayList<>(neighbors.values())) {
@@ -30,16 +28,6 @@ public class CDVertexValue<K> {
             this.cnts[k] = this.cnts[k] + 1;
         }
         this.cnt = this.cnts[core];
-
-    }
-
-    public CDVertexValue(CDVertexValue<K> c) {
-        this.core = c.getCore();
-        this.degree = c.getDegree();
-        this.oldCore = c.getOldCore();
-        this.cnts = c.getCnts();
-        this.neighbors = new HashMap<>(c.getNeighbors());
-        this.cnt = c.getCnt();
     }
 
     public int getCore() {
@@ -73,12 +61,16 @@ public class CDVertexValue<K> {
         this.neighbors.put(neighbor, core);
     }
 
-    public int getOldCore() {
-        return oldCore;
+    public boolean getChanged() {
+        return changed;
     }
 
-    public void setOldCore(int oldCore) {
-        this.oldCore = oldCore;
+    public void setChanged() {
+        this.changed = true;
+    }
+
+    public void setUnchanged() {
+        this.changed = false;
     }
 
     @Override
@@ -86,12 +78,12 @@ public class CDVertexValue<K> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CDVertexValue<?> that = (CDVertexValue<?>) o;
-        return core == that.core && oldCore == that.oldCore && Objects.equals(neighbors, that.neighbors);
+        return core == that.core && changed == that.changed && Objects.equals(neighbors, that.neighbors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(core, oldCore, neighbors);
+        return Objects.hash(core, changed, neighbors);
     }
 
 
@@ -99,7 +91,7 @@ public class CDVertexValue<K> {
     public String toString() {
         return "CDVertexValue{" +
                 "core=" + core +
-                ", oldCore=" + oldCore +
+                ", oldCore=" + changed +
                 ", cnts=" + cnts +
                 ", cnt=" + cnt +
                 ", neighbors=" + neighbors +

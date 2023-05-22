@@ -19,7 +19,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 
-public class CoreDecomposition_base<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Integer>>> {
+public class CoreDecomposition_base<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Tuple2<Integer,Integer>>>> {
 
     private final int maxIterations;
 
@@ -28,7 +28,7 @@ public class CoreDecomposition_base<K extends Comparable<K>, EV> implements Grap
     }
 
     @Override
-    public DataSet<Vertex<K, Integer>> run(Graph<K, NullValue, EV> input) throws Exception {
+    public DataSet<Vertex<K, Tuple2<Integer,Integer>>> run(Graph<K, NullValue, EV> input) throws Exception {
         Graph<K, NullValue, EV> evGraph = input.run(new Simplify<K, NullValue, EV>(false));
         DataSet<Vertex<K, LongValue>> degree = evGraph.run(new VertexInDegree<K, NullValue, EV>());
         DataSet<Vertex<K, CDVertexValue<K>>> map1 = evGraph
@@ -69,15 +69,12 @@ public class CoreDecomposition_base<K extends Comparable<K>, EV> implements Grap
                         return new Vertex<>(value.f0.getId(), new CDVertexValue<K>(Integer.parseInt(value.f1.getValue().toString()), value.f0.getValue().f1));
                     }
                 });
-
-//        map1.print();
-
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
         Graph<K, CDVertexValue<K>, EV> kcdVertexValueEVGraph = graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations);
-        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Integer>() {
+        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Tuple2<Integer,Integer>>() {
             @Override
-            public Integer map(Vertex<K, CDVertexValue<K>> vertex) throws Exception {
-                return vertex.getValue().getCore();
+            public Tuple2<Integer,Integer> map(Vertex<K, CDVertexValue<K>> vertex) throws Exception {
+                return new Tuple2<>(vertex.getValue().getCore(), vertex.getValue().numMsg);
             }
         }).getVertices();
     }

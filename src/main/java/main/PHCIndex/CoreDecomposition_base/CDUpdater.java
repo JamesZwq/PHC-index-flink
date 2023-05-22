@@ -10,10 +10,12 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
 
     @Override
     public void updateVertex(Vertex<K, CDVertexValue<K>> vertex, MessageIterator<CDMessage<K>> inMessages) {
-        CDVertexValue<K> v = new CDVertexValue<>(vertex.getValue());
-        v.setOldCore(v.getCore());
+        CDVertexValue<K> v = vertex.getValue();
+        v.setUnchanged();
+        int oldCore = v.getCore();
         for (CDMessage<K> msg : inMessages) {
             v.setNeighbor(msg.getSource(), msg.getCore());
+            v.numMsg++;
         }
 
         ArrayList<Integer> cnts = new ArrayList<>();
@@ -31,6 +33,9 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
             numCnt += cnts.get(i);
             if (numCnt >= i) {
                 v.setCore(i);
+                if (oldCore != i) {
+                    v.setChanged();
+                }
                 break;
             }
         }
