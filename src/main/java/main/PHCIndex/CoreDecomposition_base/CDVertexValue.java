@@ -9,6 +9,8 @@ public class CDVertexValue<K> {
     private boolean changed;
     public int numMsg = 0;
 
+    public int completeAt = 0;
+
     public CDVertexValue(int core, HashMap<K, Integer> neighbors) {
         this.core = core;
         this.changed = true;

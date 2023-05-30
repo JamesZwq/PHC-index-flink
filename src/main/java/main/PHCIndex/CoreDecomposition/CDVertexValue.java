@@ -13,6 +13,8 @@ public class CDVertexValue<K> {
     final private int degree;
     public int numMsg = 0;
 
+    public int completeAt = 0;
+
     public int getDegree() {
         return degree;
     }

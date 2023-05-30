@@ -15,6 +15,7 @@ import org.apache.flink.api.java.operators.ReduceOperator;
 import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
@@ -36,10 +37,15 @@ public class Main {
             System.out.println("Usage: <input_path> <log_path> <algorithm, 1 for base, 2 for total>");
             System.exit(1);
         }
+//        Configuration conf = new Configuration();
+//        conf.setString("taskmanager.memory.network.fraction", "0.2");
+//        conf.setString("taskmanager.memory.network.min", "64mb");
+//        final ExecutionEnvironment env = ExecutionEnvironment.createLocalEnvironment(conf);
+//        env.setParallelism(1);
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         DataSet<Tuple3<Integer, Integer, NullValue>> edges = env.readTextFile(args[0]).flatMap(new readGraph()).distinct();
         Graph<Integer, NullValue, NullValue> graph = Graph.fromTupleDataSet(edges, env);
-        DataSet<Vertex<Integer, Tuple2<Integer,Integer>>> Cores;
+        DataSet<Vertex<Integer, Tuple3<Integer,Integer,Integer>>> Cores;
         if (Integer.parseInt(args[2]) == 1) {
             System.out.println("Using base algorithm");
             Cores = new CoreDecomposition_base<Integer, NullValue>(100000000).run(graph);
@@ -47,22 +53,26 @@ public class Main {
             System.out.println("Using total algorithm");
             Cores = new CoreDecomposition<Integer, NullValue>(100000000).run(graph);
         }
-        MapOperator<Vertex<Integer, Tuple2<Integer, Integer>>, Tuple1<Integer>> msgs = Cores.map(new MapFunction<Vertex<Integer, Tuple2<Integer, Integer>>, Tuple1<Integer>>() {
+//        Cores.map(new MapFunction<Vertex<Integer, Tuple3<Integer, Integer, Integer>>, Tuple4<Integer,Integer,Integer,Integer>>() {
+//            @Override
+//            public Tuple4<Integer, Integer, Integer, Integer> map(Vertex<Integer, Tuple3<Integer, Integer, Integer>> value) throws Exception {
+//                return new Tuple4<>(value.getId(), value.getValue().f0, value.getValue().f1, value.getValue().f2);
+//            }
+//        }).sortPartition(0,Order.ASCENDING).print();
+
+//        Cores.map(new MapFunction<Vertex<Integer, Tuple3<Integer, Integer, Integer>>, Tuple1<Integer>>() {
+//            @Override
+//            public Tuple1<Integer> map(Vertex<Integer, Tuple3<Integer, Integer, Integer>> value) throws Exception {
+//                return new Tuple1<>(value.getValue().f1);
+//            }
+//        }).sum(0).print();
+        Cores.map(new MapFunction<Vertex<Integer, Tuple3<Integer, Integer, Integer>>, Tuple4<Integer,Integer,Integer,Integer>>() {
             @Override
-            public Tuple1<Integer> map(Vertex<Integer, Tuple2<Integer, Integer>> value) throws Exception {
-                return new Tuple1<>(value.getValue().f1);
+            public Tuple4<Integer, Integer, Integer, Integer> map(Vertex<Integer, Tuple3<Integer, Integer, Integer>> value) throws Exception {
+                return new Tuple4<>(value.getId(), value.getValue().f0, value.getValue().f0, value.getValue().f0);
             }
-        });
-        List<Tuple1<Integer>> sumMsg = msgs.sum(0).collect();
-        System.out.println("Sum of messages: " + sumMsg.get(0).f0);
-        List<Tuple1<Integer>> maxMsg = msgs.max(0).collect();
-        System.out.println("Max of messages: " + maxMsg.get(0).f0);
-        Cores.map(new MapFunction<Vertex<Integer, Tuple2<Integer, Integer>>, Vertex<Integer,Integer>>() {
-            @Override
-            public Vertex<Integer, Integer> map(Vertex<Integer, Tuple2<Integer, Integer>> value) throws Exception {
-                return new Vertex<>(value.getId(), value.getValue().f0);
-            }
-        });
+        }).sortPartition(0,Order.ASCENDING).writeAsCsv(args[1], FileSystem.WriteMode.OVERWRITE);
+        env.execute();
     }
 
     public static class readGraph implements FlatMapFunction<String, Tuple3<Integer, Integer, NullValue>> {
@@ -70,6 +80,7 @@ public class Main {
         public void flatMap(String value, Collector<Tuple3<Integer, Integer, NullValue>> out) {
             if(value.equals("")) return;
             if(value.equals("\n")) return;
+            if(value.charAt(0) == '#') return;
             String[] split = value.split("\\s+");
             out.collect(new Tuple3<>(Integer.parseInt(split[0]), Integer.parseInt(split[1]), new NullValue()));
         }

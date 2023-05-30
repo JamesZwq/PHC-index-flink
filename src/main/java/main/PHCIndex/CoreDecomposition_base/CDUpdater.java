@@ -16,30 +16,31 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
         for (CDMessage<K> msg : inMessages) {
             v.setNeighbor(msg.getSource(), msg.getCore());
             v.numMsg++;
-        }
 
-        ArrayList<Integer> cnts = new ArrayList<>();
-        for (int i = 0; i <= v.getCore(); i++) {
-            cnts.add(0);
-        }
+            ArrayList<Integer> cnts = new ArrayList<>();
+            for (int i = 0; i <= v.getCore(); i++) {
+                cnts.add(0);
+            }
 
-        for (K u : vertex.getValue().getNeighbors().keySet()) {
-            int minCore = Math.min(v.getNeighbors().get(u), v.getCore());
-            cnts.set(minCore, cnts.get(minCore) + 1);
-        }
+            for (K u : vertex.getValue().getNeighbors().keySet()) {
+                int minCore = Math.min(v.getNeighbors().get(u), v.getCore());
+                cnts.set(minCore, cnts.get(minCore) + 1);
+            }
 
-        int numCnt = 0;
-        for (int i = v.getCore(); i >= 0; i--) {
-            numCnt += cnts.get(i);
-            if (numCnt >= i) {
-                v.setCore(i);
-                if (oldCore != i) {
-                    v.setChanged();
+            int numCnt = 0;
+            for (int i = v.getCore(); i >= 0; i--) {
+                numCnt += cnts.get(i);
+                if (numCnt >= i) {
+                    v.setCore(i);
+                    if (oldCore != i) {
+                        v.setChanged();
+                        v.completeAt = getSuperstepNumber();
+                    }
+                    break;
                 }
-                break;
             }
         }
-
+        System.out.println("vertex " + vertex.getId() + " from " + oldCore + " to " + v.getCore() + " at superstep " + getSuperstepNumber());
         setNewVertexValue(v);
     }
 }

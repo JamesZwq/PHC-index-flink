@@ -9,7 +9,7 @@ public class CDMessager<K extends Comparable<K>, EV> extends ScatterFunction<K, 
         CDVertexValue<K> v = vertex.getValue();
         if (v.getChanged()) {
             for (K u : vertex.getValue().getNeighbors().keySet()) {
-                if (v.getNeighbors().get(u) > v.getCore()) {
+                if (v.getNeighbors().get(u) > v.getCore() || getSuperstepNumber() == 1) {
                     sendMessageTo(u, new CDMessage<>(vertex.getId(), v.getCore()));
                 }
             }

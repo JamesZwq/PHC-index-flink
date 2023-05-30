@@ -14,34 +14,33 @@ public class CDUpdater<K extends Comparable<K>> extends GatherFunction<K, CDVert
         v.setUnchanged();
         for (CDMessage<K> msg : inMessages) {
             if (msg.getCore() >= v.getCore()) {
-                v.setCnt(v.getCnt() + 1);
+                v.setCnts(v.getCore(), v.getCnts()[v.getCore()] + 1);
             } else {
                 v.setCnts(msg.getCore(), v.getCnts()[msg.getCore()] + 1);
             }
 
             int nbrK = v.getNeighbors().get(msg.getSource());
             if(nbrK >= v.getCore()){
-                v.setCnt(v.getCnt() - 1);
+                v.setCnts(v.getCore(), v.getCnts()[v.getCore()] - 1);
             } else {
                 v.setCnts(nbrK, v.getCnts()[nbrK] - 1);
             }
 
+
             v.setNeighbor(msg.getSource(), msg.getCore());
             v.numMsg++;
-        }
-        int numCnt = v.getCnt();
 
-        if(numCnt >= v.getCore()) {
-            setNewVertexValue(v);
-            return;
-        }
-        v.setChanged();
-        for (int i = v.getCore()-1; i >= 0; i--) {
-            numCnt += v.getCnts()[i];
-            if (numCnt >= i) {
-                v.setCore(i);
-                v.setCnt(numCnt);
-                break;
+            if(v.getCnts()[v.getCore()] >= v.getCore()) {
+                continue;
+            }
+            v.setChanged();
+            for (int i = v.getCore()-1; i >= 0; i--) {
+                v.getCnts()[i] += v.getCnts()[i+1];
+                if (v.getCnts()[i] >= i) {
+                    v.setCore(i);
+                    v.completeAt = getSuperstepNumber();
+                    break;
+                }
             }
         }
         setNewVertexValue(v);

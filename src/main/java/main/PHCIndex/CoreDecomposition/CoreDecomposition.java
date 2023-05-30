@@ -12,6 +12,7 @@ import org.apache.flink.api.java.operators.MapOperator;
 import org.apache.flink.api.java.operators.UnionOperator;
 import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.GraphAlgorithm;
@@ -24,7 +25,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 
-public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Tuple2<Integer,Integer>>>> {
+public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgorithm<K, NullValue, EV, DataSet<Vertex<K, Tuple3<Integer,Integer,Integer>>>> {
 
     private final int maxIterations;
 
@@ -33,7 +34,7 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
     }
 
     @Override
-    public DataSet<Vertex<K, Tuple2<Integer,Integer>>> run(Graph<K, NullValue, EV> input) throws Exception {
+    public DataSet<Vertex<K, Tuple3<Integer,Integer,Integer>>> run(Graph<K, NullValue, EV> input) throws Exception {
         Graph<K, NullValue, EV> evGraph = input.run(new Simplify<>(false));
         DataSet<Vertex<K, LongValue>> degree = evGraph.run(new VertexInDegree<>());
         DataSet<Vertex<K, CDVertexValue<K>>> map1 = evGraph
@@ -76,10 +77,10 @@ public class CoreDecomposition<K extends Comparable<K>, EV> implements GraphAlgo
                 });
         Graph<K, CDVertexValue<K>, EV> graph = Graph.fromDataSet(map1, evGraph.getEdges(), input.getContext());
         Graph<K, CDVertexValue<K>, EV> kcdVertexValueEVGraph = graph.runScatterGatherIteration(new CDMessager<K, EV>(), new CDUpdater<K>(), maxIterations);
-        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Tuple2<Integer,Integer>>() {
+        return kcdVertexValueEVGraph.mapVertices(new MapFunction<Vertex<K, CDVertexValue<K>>, Tuple3<Integer,Integer,Integer>>() {
             @Override
-            public Tuple2<Integer,Integer> map(Vertex<K, CDVertexValue<K>> vertex) {
-                return new Tuple2<>(vertex.getValue().getCore(), vertex.getValue().numMsg);
+            public Tuple3<Integer,Integer,Integer> map(Vertex<K, CDVertexValue<K>> vertex) {
+                return new Tuple3<>(vertex.getValue().getCore(), vertex.getValue().numMsg,vertex.getValue().completeAt);
             }
         }).getVertices();
     }
